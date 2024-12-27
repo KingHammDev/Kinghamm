@@ -44,10 +44,16 @@ export async function GET() {
 // 創建新使用者
 export async function POST(request) {
   try {
+    console.log(request)
     const body = await request.json();
+
+    console.log(body)
     
     // 驗證輸入資料
     const validationResult = userSchema.safeParse(body);
+
+    console.log(validationResult.success)
+
     if (!validationResult.success) {
       return NextResponse.json({
         success: false,
@@ -58,11 +64,15 @@ export async function POST(request) {
 
     const { email, name, password } = validationResult.data;
 
-    // 檢查電子郵件是否已存在
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
+    console.log(validationResult.data)
 
+    // 檢查電子郵件是否已存在
+    // const existingUser = await prisma.user.findUnique({
+    //   where: { email: email },
+    // });
+
+    // console.log(existingUser)
+    const existingUser = false
     if (existingUser) {
       return NextResponse.json({
         success: false,
