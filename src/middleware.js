@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { verifyAuth } from './lib/auth';
 
 // 需要認證的路徑
-const protectedPaths = ['/dashboard',  '/accounting', '/settings'];
+const protectedPaths = [ '/user/create', '/accounting', '/settings'];
 // 公開路徑
 const publicPaths = ['/login', '/register', '/forgot-password'];
 
