@@ -16,3 +16,27 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model ClothesIn {
+  c_in_no    String
+  c_in_id    Int
+  od_no      String
+  quantity   Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user_id    Int
+
+  @@unique([c_in_no, c_in_id])
+}
+
+model ClothesOut {
+  c_out_no    String
+  c_out_id    Int
+  od_no      String
+  quantity   Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user_id    Int
+
+  @@unique([c_out_no, c_out_id])
+}

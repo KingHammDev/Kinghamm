@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { initializeMssqlPool } from "@/lib/mssql";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,6 +16,14 @@ export const metadata = {
   title: "KingHamm App",
   description: "KingHamm",
 };
+
+initializeMssqlPool()
+  .then(() => {
+    console.log('MSSQL connection pool initialized');
+  })
+  .catch((err) => {
+    console.error('Failed to initialize MSSQL connection pool:', err);
+  });
 
 export default function RootLayout({ children }) {
   return (
