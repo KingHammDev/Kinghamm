@@ -21,7 +21,7 @@ export default function CreateUserPage() {
       const result = await response.json();
 
       if (result.success) {
-        router.push('/dashboard');
+        router.push('/users');
       } else {
         setError(result.message);
       }

@@ -10,6 +10,7 @@ const userSchema = z.object({
   email: z.string().email('請輸入有效的電子郵件'),
   name: z.string().min(2, '名稱至少需要 2 個字元'),
   password: z.string().min(6, '密碼至少需要 6 個字元'),
+  factory: z.string().min(1, '請選擇廠區') 
 });
 
 // 獲取所有使用者
@@ -59,7 +60,7 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    const { email, name, password } = validationResult.data;
+    const { email, name, password, factory } = validationResult.data;
 
 
     // 檢查電子郵件是否已存在
@@ -83,11 +84,13 @@ export async function POST(request) {
         email,
         name,
         password: hashedPassword,
+        faId: factory
       },
       select: {
         id: true,
         email: true,
         name: true,
+        faId: true,
         createdAt: true,
         updatedAt: true,
       },

@@ -1,42 +1,53 @@
+// src/middleware.js
 import { NextResponse } from 'next/server';
-import { verifyAuth } from './lib/auth';
+import { jwtVerify } from 'jose';
 
 // 需要認證的路徑
-const protectedPaths = [];
-// 公開路徑
-const publicPaths = ['/login', '/register', '/forgot-password'];
+const protectedPaths = [
+  '/dashboard', 
+  '/clothes',      
+  '/accounting', 
+  '/settings'
+];
+
+// 使用 jose 來驗證 token
+async function verifyToken(token) {
+  try {
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
+    return payload;
+  } catch (error) {
+    return null;
+  }
+}
 
 export async function middleware(request) {
   const path = request.nextUrl.pathname;
 
-  // 處理需要認證的路徑
+  // 檢查是否是受保護的路徑
   if (protectedPaths.some(pp => path.startsWith(pp))) {
     const authToken = request.cookies.get('auth_token')?.value;
 
     if (!authToken) {
-      // 未登入，重導向到登入頁面
       return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    try {
-      // 驗證 token
-      await verifyAuth(authToken);
-      return NextResponse.next();
-    } catch (error) {
-      // token 無效，重導向到登入頁面
+    // 使用 verifyToken 進行驗證
+    const payload = await verifyToken(authToken);
+    if (!payload) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
+
+    return NextResponse.next();
   }
 
   // 處理已登入用戶訪問登入頁面的情況
-  if (publicPaths.includes(path)) {
+  if (path === '/login') {
     const authToken = request.cookies.get('auth_token')?.value;
     if (authToken) {
-      try {
-        await verifyAuth(authToken);
+      const payload = await verifyToken(authToken);
+      if (payload) {
         return NextResponse.redirect(new URL('/dashboard', request.url));
-      } catch (error) {
-        // Token 無效，繼續顯示登入頁面
       }
     }
   }
@@ -47,11 +58,9 @@ export async function middleware(request) {
 export const config = {
   matcher: [
     '/dashboard/:path*',
-    '/users/:path*',
+    '/clothes/:path*',
     '/accounting/:path*',
     '/settings/:path*',
-    '/login',
-    '/register',
-    '/forgot-password'
-  ],
+    '/login'
+  ]
 };

@@ -48,7 +48,7 @@ export async function POST(request) {
       const lastSequence = parseInt(lastDocument.c_in_no.slice(-4));
       sequence = lastSequence + 1;
     }
-    
+
     const documentNo = `C${dateStr}${sequence.toString().padStart(4, '0')}`;
 
     // 使用 Prisma 交易，但改用 async/await 方式處理
@@ -61,6 +61,9 @@ export async function POST(request) {
             c_in_no: documentNo,
             c_in_id: item.seqNo,
             od_no: item.productNo,
+            color_name: item.colorName,  // 新增
+            po: item.po,                 // 新增
+            size: item.size,             // 新增
             quantity: parseInt(item.quantity),
             user_id: 1
           }
@@ -79,7 +82,7 @@ export async function POST(request) {
 
   } catch (error) {
     console.error('Save error:', error);
-    
+
     // 更詳細的錯誤訊息處理
     let errorMessage = '儲存失敗';
     if (error.code === 'P2002') {

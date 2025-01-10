@@ -20,7 +20,11 @@ model User {
 model ClothesIn {
   c_in_no    String
   c_in_id    Int
+  fa_id String
   od_no      String
+  color_name String
+  po String
+  size String
   quantity   Int
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -32,7 +36,11 @@ model ClothesIn {
 model ClothesOut {
   c_out_no    String
   c_out_id    Int
+  fa_id String
   od_no      String
+  color_name String
+  po String
+  size String
   quantity   Int
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt

@@ -44,9 +44,13 @@ export default function ClothesInPage() {
                     checked: false,
                     seqNo: item.c_in_id,
                     productNo: item.od_no,
+                    colorName: item.color_name,
+                    po: item.po,
+                    size: item.size,
                     quantity: item.quantity.toString()
                 }));
                 setItems(formattedItems);
+                setIsEditing(true);
             }
         } catch (error) {
             console.error('Error fetching document:', error);
@@ -76,12 +80,6 @@ export default function ClothesInPage() {
             };
             return newItems;
         });
-    };
-
-    const handleProductNoChange = (e, index) => {
-        // 只允許大寫字母和數字
-        const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-        handleInputChange(index, 'productNo', value);
     };
 
     const handleCheckboxChange = (index) => {
@@ -122,7 +120,7 @@ export default function ClothesInPage() {
                     throw new Error(data.message || '刪除失敗');
                 }
             }
-            
+
             // 更新本地狀態
             const remainingItems = items.filter(item => !item.checked);
             // 如果刪除後沒有剩餘項目，重置所有狀態
@@ -135,10 +133,10 @@ export default function ClothesInPage() {
             } else {
                 // 如果還有剩餘項目，重新編號
                 setItems(
-                remainingItems.map((item, index) => ({
-                    ...item,
-                    seqNo: index + 1
-                }))
+                    remainingItems.map((item, index) => ({
+                        ...item,
+                        seqNo: index + 1
+                    }))
                 );
             }
 
@@ -270,11 +268,13 @@ export default function ClothesInPage() {
 
     // 處理選擇 MSSQL 資料項目
     const handleMssqlItemSelect = (item, checked) => {
+        console.log(checked)
         if (checked) {
             setSelectedMssqlItems(prev => [...prev, item]);
         } else {
-            setSelectedMssqlItems(prev => prev.filter(i => i.ProductNo !== item.ProductNo));
+            setSelectedMssqlItems(prev => prev.filter(i => !(i.ShippingNo === item.ShippingNo && i.ShippingSeq === item.ShippingSeq && i.Size === item.Size)));
         }
+        console.log(item)
     };
 
     // 將選中的項目加入到入庫明細
@@ -285,6 +285,9 @@ export default function ClothesInPage() {
                 checked: false,
                 seqNo: items.length + index + 1,
                 productNo: item.ProductNo,
+                colorName: item.ColorName,
+                po: item.PO,
+                size: item.Size,
                 quantity: item.Quantity.toString()
             }))
         ];
@@ -361,10 +364,10 @@ export default function ClothesInPage() {
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
-                            <th scope="col" className="w-12 px-4 py-3">
+                            <th className="w-12 px-4 py-3">
                                 <input
                                     type="checkbox"
-                                    onChange={() => {
+                                    onChange={(e) => {
                                         const allChecked = items.every(item => item.checked);
                                         setItems(prevItems =>
                                             prevItems.map(item => ({
@@ -377,15 +380,12 @@ export default function ClothesInPage() {
                                     className="rounded border-gray-300"
                                 />
                             </th>
-                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                序號
-                            </th>
-                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                貨號
-                            </th>
-                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                數量
-                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">序號</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">貨號</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">顏色</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">PO</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">尺寸</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">數量</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -395,7 +395,7 @@ export default function ClothesInPage() {
                                     <input
                                         type="checkbox"
                                         checked={item.checked}
-                                        onChange={() => handleCheckboxChange(index)}
+                                        onChange={(e) => handleCheckboxChange(index)}
                                         className="rounded border-gray-300"
                                     />
                                 </td>
@@ -406,9 +406,36 @@ export default function ClothesInPage() {
                                     <input
                                         type="text"
                                         value={item.productNo}
-                                        onChange={(e) => handleProductNoChange(e, index)}
+                                        onChange={(e) => handleInputChange(index, 'productNo', e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
                                         className="w-full border-2 border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="請輸入貨號"
+                                    />
+                                </td>
+                                <td className="px-4 py-2">
+                                    <input
+                                        type="text"
+                                        value={item.colorName}
+                                        onChange={(e) => handleInputChange(index, 'colorName', e.target.value)}
+                                        className="w-full border-2 border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="請輸入顏色"
+                                    />
+                                </td>
+                                <td className="px-4 py-2">
+                                    <input
+                                        type="text"
+                                        value={item.po}
+                                        onChange={(e) => handleInputChange(index, 'po', e.target.value)}
+                                        className="w-full border-2 border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="請輸入PO"
+                                    />
+                                </td>
+                                <td className="px-4 py-2">
+                                    <input
+                                        type="text"
+                                        value={item.size}
+                                        onChange={(e) => handleInputChange(index, 'size', e.target.value)}
+                                        className="w-full border-2 border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="請輸入尺寸"
                                     />
                                 </td>
                                 <td className="px-4 py-2">
@@ -524,7 +551,7 @@ export default function ClothesInPage() {
             )}
             {isMssqlModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-full max-w-4xl">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-6xl">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-semibold">ERP出貨資料</h2>
                             <button
@@ -579,9 +606,13 @@ export default function ClothesInPage() {
                                                         className="rounded border-gray-300"
                                                     />
                                                 </th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">廠區</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">出貨單號</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">出貨日期</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">貨號</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">顏色</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">PO</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">尺寸</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">數量</th>
                                             </tr>
                                         </thead>
@@ -591,15 +622,19 @@ export default function ClothesInPage() {
                                                     <td className="px-4 py-2">
                                                         <input
                                                             type="checkbox"
-                                                            checked={selectedMssqlItems.some(i => i.ShippingNo === item.ShippingNo)}
+                                                            checked={selectedMssqlItems.some(i => (i.ShippingNo === item.ShippingNo && i.ShippingSeq === item.ShippingSeq && i.Size === item.Size))}
                                                             onChange={(e) => handleMssqlItemSelect(item, e.target.checked)}
                                                             className="rounded border-gray-300"
                                                         />
                                                     </td>
+                                                    <td className="px-4 py-2">{item.FaId}</td>
                                                     <td className="px-4 py-2">{item.ShippingNo}</td>
                                                     <td className="px-4 py-2">{new Date(item.ShippingDate).toLocaleDateString()}</td>
                                                     <td className="px-4 py-2">{item.ProductNo}</td>
-                                                    <td className="px-4 py-2">{item.Quantity}</td>
+                                                    <td className="px-4 py-2">{item.ColorName}</td>
+                                                    <td className="px-4 py-2">{item.Po}</td>
+                                                    <td className="px-4 py-2">{item.Size}</td>
+                                                    <td className="px-4 py-2">{item.TotalQty}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
