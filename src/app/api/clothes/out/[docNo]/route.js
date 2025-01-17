@@ -8,12 +8,12 @@ export async function GET(request, { params }) {
     const { docNo } = await params;
 
     // 取得文件及其所有項目
-    const items = await prisma.clothesIn.findMany({
+    const items = await prisma.clothesOut.findMany({
       where: {
-        c_in_no: docNo
+        c_out_no: docNo
       },
       orderBy: {
-        c_in_id: 'asc'
+        c_out_id: 'asc'
       }
     });
 
@@ -27,7 +27,7 @@ export async function GET(request, { params }) {
     return NextResponse.json({
       success: true,
       document: {
-        c_in_no: docNo
+        c_out_no: docNo
       },
       items: items
     });

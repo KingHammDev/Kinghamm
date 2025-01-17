@@ -13,8 +13,8 @@ model User {
   password  String
   name      String?
   faId      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(dbgenerated("TIMEZONE('Asia/Taipei', NOW())"))
+  updatedAt DateTime @updatedAt @db.Timestamptz
 }
 
 model ClothesIn {
@@ -26,8 +26,8 @@ model ClothesIn {
   po String
   size String
   quantity   Int
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime @default(dbgenerated("TIMEZONE('Asia/Taipei', NOW())"))
+  updated_at DateTime @updatedAt @db.Timestamptz
   user_id    Int
 
   @@unique([c_in_no, c_in_id])
@@ -42,9 +42,25 @@ model ClothesOut {
   po String
   size String
   quantity   Int
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime @default(dbgenerated("TIMEZONE('Asia/Taipei', NOW())"))
+  updated_at DateTime @updatedAt @db.Timestamptz
   user_id    Int
 
   @@unique([c_out_no, c_out_id])
+}
+
+model ClothesAdj {
+  c_adj_no    String
+  c_adj_id    Int
+  fa_id String
+  od_no      String
+  color_name String
+  po String
+  size String
+  quantity   Int
+  created_at DateTime @default(dbgenerated("TIMEZONE('Asia/Taipei', NOW())"))
+  updated_at DateTime @updatedAt @db.Timestamptz
+  user_id    Int
+
+  @@unique([c_adj_no, c_adj_id])
 }

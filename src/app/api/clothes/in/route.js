@@ -8,7 +8,6 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const { items } = body;
-
     // 基本驗證
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({
@@ -35,7 +34,7 @@ export async function POST(request) {
     const lastDocument = await prisma.clothesIn.findFirst({
       where: {
         c_in_no: {
-          startsWith: `C${dateStr}`
+          startsWith: `CI${dateStr}`
         }
       },
       orderBy: {
@@ -49,50 +48,40 @@ export async function POST(request) {
       sequence = lastSequence + 1;
     }
 
-    const documentNo = `C${dateStr}${sequence.toString().padStart(4, '0')}`;
+    const documentNo = `CI${dateStr}${sequence.toString().padStart(4, '0')}`;
 
-    // 使用 Prisma 交易，但改用 async/await 方式處理
-    const result = await prisma.$transaction(async (tx) => {
-      // 批次創建所有項目
-      const createdItems = [];
+    // 使用 transaction 進行資料儲存
+    await prisma.$transaction(async (tx) => {
       for (const item of items) {
-        const createdItem = await tx.clothesIn.create({
+        await tx.clothesIn.create({
           data: {
             c_in_no: documentNo,
-            c_in_id: item.seqNo,
+            c_in_id: parseInt(item.seqNo),
             od_no: item.productNo,
-            color_name: item.colorName,  // 新增
-            po: item.po,                 // 新增
-            size: item.size,             // 新增
+            color_name: item.colorName,
+            po: item.po,
+            size: item.size,
             quantity: parseInt(item.quantity),
-            user_id: 1
+            user_id: 1,
+            fa_id: 'VN1'
           }
         });
-        createdItems.push(createdItem);
       }
-      return createdItems;
     });
 
     return NextResponse.json({
       success: true,
       message: '儲存成功',
-      documentNo,
-      items: result
+      documentNo
     });
 
   } catch (error) {
-    console.error('Save error:', error);
-
-    // 更詳細的錯誤訊息處理
-    let errorMessage = '儲存失敗';
-    if (error.code === 'P2002') {
-      errorMessage = '資料重複';
-    }
+    console.log(error);
 
     return NextResponse.json({
       success: false,
-      message: errorMessage,
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: '儲存失敗',
+      error: error.message
     }, { status: 500 });
   } finally {
     await prisma.$disconnect();

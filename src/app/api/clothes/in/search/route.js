@@ -45,6 +45,7 @@ export async function GET(request) {
 
     return NextResponse.json({
       success: true,
+      data: documents,
       documents: Object.values(groupedDocs).map(doc => ({
         c_in_no: doc.c_in_no,
         created_at: doc.created_at,

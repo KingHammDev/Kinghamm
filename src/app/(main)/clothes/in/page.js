@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-// import { Trash2, Plus } from 'lucide-react';
 
 export default function ClothesInPage() {
     const router = useRouter();
@@ -66,6 +65,9 @@ export default function ClothesInPage() {
                 checked: false,
                 seqNo: prevItems.length + 1,
                 productNo: '',
+                colorName: '',
+                po: '',
+                size: '',
                 quantity: ''
             }
         ]);
@@ -191,7 +193,7 @@ export default function ClothesInPage() {
     };
 
     const handleCreateNew = () => {
-        setItems([{ checked: false, seqNo: 1, productNo: '', quantity: '' }]);
+        setItems([{ checked: false, seqNo: 1, productNo: '',colorName: '', po: '', size:'', quantity: '' }]);
         setDocumentNo('');
         setIsEditing(false);
         router.push('/clothes/in');
@@ -268,13 +270,11 @@ export default function ClothesInPage() {
 
     // 處理選擇 MSSQL 資料項目
     const handleMssqlItemSelect = (item, checked) => {
-        console.log(checked)
         if (checked) {
             setSelectedMssqlItems(prev => [...prev, item]);
         } else {
             setSelectedMssqlItems(prev => prev.filter(i => !(i.ShippingNo === item.ShippingNo && i.ShippingSeq === item.ShippingSeq && i.Size === item.Size)));
         }
-        console.log(item)
     };
 
     // 將選中的項目加入到入庫明細
@@ -286,7 +286,7 @@ export default function ClothesInPage() {
                 seqNo: items.length + index + 1,
                 productNo: item.ProductNo,
                 colorName: item.ColorName,
-                po: item.PO,
+                po: item.Po,
                 size: item.Size,
                 quantity: item.Quantity.toString()
             }))
@@ -634,7 +634,7 @@ export default function ClothesInPage() {
                                                     <td className="px-4 py-2">{item.ColorName}</td>
                                                     <td className="px-4 py-2">{item.Po}</td>
                                                     <td className="px-4 py-2">{item.Size}</td>
-                                                    <td className="px-4 py-2">{item.TotalQty}</td>
+                                                    <td className="px-4 py-2">{item.Quantity}</td>
                                                 </tr>
                                             ))}
                                         </tbody>

@@ -30,7 +30,7 @@ export async function GET(request) {
         when 'qty11' then (select us11 from odh where od_no=shipping.od_no)
         when 'qty12' then (select us12 from odh where od_no=shipping.od_no)
         end Size,
-        total TotalQty
+        total Quantity
         from blb shipping
         left join (
         select bl_no,bl_seq,od_no,od_seq,size,total
