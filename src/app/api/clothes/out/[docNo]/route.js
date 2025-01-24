@@ -33,7 +33,7 @@ export async function GET(request, { params }) {
     });
 
   } catch (error) {
-    console.log(error);
+    console.log(error.message);
     return NextResponse.json({
       success: false,
       message: '讀取文件時發生錯誤'
@@ -52,25 +52,25 @@ export async function PUT(request, { params }) {
     // 使用交易來更新資料
     await prisma.$transaction(async (tx) => {
       // 先刪除原有的項目
-      await tx.clothesIn.deleteMany({
+      await tx.clothesOut.deleteMany({
         where: {
-          c_in_no: docNo
+          c_out_no: docNo
         }
       });
 
       // 新增更新後的項目
       for (const item of items) {
-        await tx.clothesIn.create({
+        await tx.clothesOut.create({
           data: {
-            c_in_no: docNo,
-            c_in_id: parseInt(item.seqNo),
+            c_out_no: docNo,
+            c_out_id: parseInt(item.seqNo),
             od_no: item.productNo,
             color_name: item.colorName,
             po: item.po,
             size: item.size,
             quantity: parseInt(item.quantity),
-            user_id: 1,
-            fa_id: 'VN1'
+            user_id: item.userId,
+            fa_id: item.faId
           }
         });
       }
@@ -82,7 +82,7 @@ export async function PUT(request, { params }) {
     });
 
   } catch (error) {
-    console.log(error);
+    console.log(error.message);
     return NextResponse.json({
       success: false,
       message: '更新文件時發生錯誤'

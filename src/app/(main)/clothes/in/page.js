@@ -8,6 +8,8 @@ export default function ClothesInPage() {
     const searchParams = useSearchParams();
     const docNo = searchParams.get('docNo');
 
+    const [userData, setUserData] = useState({});
+
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [documentNo, setDocumentNo] = useState('');
@@ -29,7 +31,21 @@ export default function ClothesInPage() {
             fetchDocument(docNo);
             setIsEditing(true);
         }
+        fetchUserData();
     }, [docNo]);
+
+    const fetchUserData = async () => {
+        try {
+            const response = await fetch('/api/auth/me');
+            const data = await response.json();
+            if (data.success) {
+                setUserData(data.user);
+            }
+
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        }
+    };
 
     const fetchDocument = async (docNo) => {
         try {
@@ -46,7 +62,9 @@ export default function ClothesInPage() {
                     colorName: item.color_name,
                     po: item.po,
                     size: item.size,
-                    quantity: item.quantity.toString()
+                    quantity: item.quantity.toString(),
+                    faId: userData.faId,
+                    userId: userData.id
                 }));
                 setItems(formattedItems);
                 setIsEditing(true);
@@ -68,12 +86,20 @@ export default function ClothesInPage() {
                 colorName: '',
                 po: '',
                 size: '',
-                quantity: ''
+                quantity: '',
+                faId: userData.faId,
+                userId: userData.id
             }
         ]);
     };
 
     const handleInputChange = (index, field, value) => {
+        if (field === 'quantity') {
+            if (value < 0) {
+                alert("數量不可小於0")
+                return
+            }
+        }
         setItems(prevItems => {
             const newItems = [...prevItems];
             newItems[index] = {
@@ -151,7 +177,7 @@ export default function ClothesInPage() {
     };
 
     const handleSubmit = async () => {
-        if (items.some(item => !item.productNo || !item.quantity)) {
+        if (items.some(item => !item.productNo || !item.quantity || !item.po || !item.colorName || !item.size)) {
             alert('請填寫所有必填欄位');
             return;
         }
@@ -193,7 +219,7 @@ export default function ClothesInPage() {
     };
 
     const handleCreateNew = () => {
-        setItems([{ checked: false, seqNo: 1, productNo: '',colorName: '', po: '', size:'', quantity: '' }]);
+        setItems([{ checked: false, seqNo: 1, productNo: '', colorName: '', po: '', size: '', quantity: '', faId: userData.faId }]);
         setDocumentNo('');
         setIsEditing(false);
         router.push('/clothes/in');
@@ -288,7 +314,9 @@ export default function ClothesInPage() {
                 colorName: item.ColorName,
                 po: item.Po,
                 size: item.Size,
-                quantity: item.Quantity.toString()
+                quantity: item.Quantity.toString(),
+                faId: userData.faId,
+                userId: userData.id
             }))
         ];
         setItems(newItems);

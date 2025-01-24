@@ -8,6 +8,8 @@ export default function ClothesOutPage() {
     const searchParams = useSearchParams();
     const docNo = searchParams.get('docNo');
 
+    const [userData, setUserData] = useState(null);
+
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [documentNo, setDocumentNo] = useState('');
@@ -29,24 +31,39 @@ export default function ClothesOutPage() {
             fetchDocument(docNo);
             setIsEditing(true);
         }
+        fetchUserData()
     }, [docNo]);
+
+    const fetchUserData = async () => {
+        try {
+            const response = await fetch('/api/auth/me');
+            const data = await response.json();
+            if (data.success) {
+                setUserData(data.user);
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        }
+    };
 
     const fetchDocument = async (docNo) => {
         try {
             setLoading(true);
-            const response = await fetch(`/api/clothes/in/${docNo}`);
+            const response = await fetch(`/api/clothes/out/${docNo}`);
             const data = await response.json();
 
             if (data.success) {
-                setDocumentNo(data.document.c_in_no);
+                setDocumentNo(data.document.c_out_no);
                 const formattedItems = data.items.map(item => ({
                     checked: false,
-                    seqNo: item.c_in_id,
+                    seqNo: item.c_out_id,
                     productNo: item.od_no,
                     colorName: item.color_name,
                     po: item.po,
                     size: item.size,
-                    quantity: item.quantity.toString()
+                    quantity: item.quantity.toString(),
+                    faId: userData.faId,
+                    userId: userData.id
                 }));
                 setItems(formattedItems);
                 setIsEditing(true);
@@ -58,22 +75,30 @@ export default function ClothesOutPage() {
         }
     };
 
-    const addNewLine = () => {
-        setItems(prevItems => [
-            ...prevItems,
-            {
-                checked: false,
-                seqNo: prevItems.length + 1,
-                productNo: '',
-                colorName: '',
-                po: '',
-                size: '',
-                quantity: ''
-            }
-        ]);
-    };
+    // const addNewLine = () => {
+    //     setItems(prevItems => [
+    //         ...prevItems,
+    //         {
+    //             checked: false,
+    //             seqNo: prevItems.length + 1,
+    //             productNo: '',
+    //             colorName: '',
+    //             po: '',
+    //             size: '',
+    //             quantity: '',
+    //             faId: userData.faId,
+    //             userId: userData.id
+    //         }
+    //     ]);
+    // };
 
     const handleInputChange = (index, field, value) => {
+        if (field === 'quantity') {
+            if (value < 0) {
+                alert("數量不可小於0")
+                return
+            }
+        }
         setItems(prevItems => {
             const newItems = [...prevItems];
             newItems[index] = {
@@ -107,7 +132,7 @@ export default function ClothesOutPage() {
 
             // 如果已有單據號碼，需要從資料庫刪除
             if (documentNo) {
-                const response = await fetch(`/api/clothes/in/${documentNo}/items`, {
+                const response = await fetch(`/api/clothes/out/${documentNo}/items`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
@@ -151,7 +176,7 @@ export default function ClothesOutPage() {
     };
 
     const handleSubmit = async () => {
-        if (items.some(item => !item.productNo || !item.quantity)) {
+        if (items.some(item => !item.productNo || !item.quantity || !item.po || !item.colorName || !item.size)) {
             alert('請填寫所有必填欄位');
             return;
         }
@@ -160,8 +185,8 @@ export default function ClothesOutPage() {
             setLoading(true);
 
             const endpoint = isEditing
-                ? `/api/clothes/in/${documentNo}`
-                : '/api/clothes/in';
+                ? `/api/clothes/out/${documentNo}`
+                : '/api/clothes/out';
 
             const method = isEditing ? 'PUT' : 'POST';
 
@@ -192,12 +217,12 @@ export default function ClothesOutPage() {
         }
     };
 
-    const handleCreateNew = () => {
-        setItems([{ checked: false, seqNo: 1, productNo: '',colorName: '', po: '', size:'', quantity: '' }]);
-        setDocumentNo('');
-        setIsEditing(false);
-        router.push('/clothes/out');
-    };
+    // const handleCreateNew = () => {
+    //     setItems([{ checked: false, seqNo: 1, productNo: '',colorName: '', po: '', size:'', quantity: '' }]);
+    //     setDocumentNo('');
+    //     setIsEditing(false);
+    //     router.push('/clothes/out');
+    // };
 
 
 
@@ -218,7 +243,7 @@ export default function ClothesOutPage() {
         try {
             setSearchLoading(true);
             setSearchError('');
-            const response = await fetch(`/api/clothes/in/search?productNo=${encodeURIComponent(searchProductNo)}`);
+            const response = await fetch(`/api/clothes/out/search?productNo=${encodeURIComponent(searchProductNo)}`);
             const data = await response.json();
 
             if (data.success) {
@@ -287,7 +312,9 @@ export default function ClothesOutPage() {
                 colorName: item.color_name,
                 po: item.po,
                 size: item.size,
-                quantity: item.quantity.toString()
+                quantity: item.quantity.toString(),
+                faId: userData.faId,
+                userId: userData.id
             }))
         ];
         setItems(newItems);
@@ -518,9 +545,9 @@ export default function ClothesOutPage() {
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
                                         {documents.map((doc) => (
-                                            <tr key={doc.c_in_no} className="hover:bg-gray-50">
+                                            <tr key={doc.c_out_no} className="hover:bg-gray-50">
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    {doc.c_in_no}
+                                                    {doc.c_out_no}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                     {new Date(doc.created_at).toLocaleDateString()}
@@ -533,7 +560,7 @@ export default function ClothesOutPage() {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                     <button
-                                                        onClick={() => handleSelectDocument(doc.c_in_no)}
+                                                        onClick={() => handleSelectDocument(doc.c_out_no)}
                                                         className="text-indigo-600 hover:text-indigo-900"
                                                     >
                                                         選擇

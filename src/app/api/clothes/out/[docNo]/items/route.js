@@ -19,32 +19,32 @@ export async function DELETE(request, { params }) {
         // 使用交易確保資料一致性
         await prisma.$transaction(async (tx) => {
             // 刪除指定的項目
-            await tx.clothesOut.deleteMany({
+            await tx.clothesIn.deleteMany({
                 where: {
                     AND: [
-                        { c_out_no: docNo },
-                        { c_out_id: { in: itemIds } }
+                        { c_in_no: docNo },
+                        { c_in_id: { in: itemIds } }
                     ]
                 }
             });
 
             // 重新排序剩餘項目的序號
-            const remainingItems = await tx.clothesOut.findMany({
-                where: { c_out_no: docNo },
-                orderBy: { c_out_id: 'asc' }
+            const remainingItems = await tx.clothesIn.findMany({
+                where: { c_in_no: docNo },
+                orderBy: { c_in_id: 'asc' }
             });
 
             // 逐一更新序號
             for (let i = 0; i < remainingItems.length; i++) {
-                await tx.clothesOut.update({
+                await tx.clothesIn.update({
                     where: {
-                        c_out_no_c_out_id: {
-                            c_out_no: docNo,
-                            c_out_id: remainingItems[i].c_out_id
+                        c_in_no_c_in_id: {
+                            c_in_no: docNo,
+                            c_in_id: remainingItems[i].c_in_id
                         }
                     },
                     data: {
-                        c_out_id: i + 1
+                        c_in_id: i + 1
                     }
                 });
             }

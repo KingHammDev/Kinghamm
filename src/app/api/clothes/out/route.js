@@ -31,32 +31,32 @@ export async function POST(request) {
     const dateStr = format(today, 'yyyyMMdd');
 
     // 查詢當天最大流水號
-    const lastDocument = await prisma.clothesIn.findFirst({
+    const lastDocument = await prisma.clothesOut.findFirst({
       where: {
-        c_in_no: {
-          startsWith: `${items[0].faId}I${dateStr}`
+        c_out_no: {
+          startsWith: `${items[0].faId}O${dateStr}`
         }
       },
       orderBy: {
-        c_in_no: 'desc'
+        c_out_no: 'desc'
       }
     });
 
     let sequence = 1;
     if (lastDocument) {
-      const lastSequence = parseInt(lastDocument.c_in_no.slice(-4));
+      const lastSequence = parseInt(lastDocument.c_out_no.slice(-4));
       sequence = lastSequence + 1;
     }
 
-    const documentNo = `${items[0].faId}I${dateStr}${sequence.toString().padStart(4, '0')}`;
+    const documentNo = `${items[0].faId}O${dateStr}${sequence.toString().padStart(4, '0')}`;
 
     // 使用 transaction 進行資料儲存
     await prisma.$transaction(async (tx) => {
       for (const item of items) {
-        await tx.clothesIn.create({
+        await tx.clothesOut.create({
           data: {
-            c_in_no: documentNo,
-            c_in_id: parseInt(item.seqNo),
+            c_out_no: documentNo,
+            c_out_id: parseInt(item.seqNo),
             od_no: item.productNo,
             color_name: item.colorName,
             po: item.po,
