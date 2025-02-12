@@ -126,7 +126,7 @@ export default function LoginPage() {
                     </div>
 
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center">
+                        {/* <div className="flex items-center">
                             <input
                                 id="remember-me"
                                 name="remember-me"
@@ -136,9 +136,9 @@ export default function LoginPage() {
                             <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                                 記住我
                             </label>
-                        </div>
+                        </div> */}
 
-                        <div className="text-sm">
+                        {/* <div className="text-sm">
                             <button
                                 type="button"
                                 onClick={() => router.push('/forgot-password')}
@@ -146,7 +146,7 @@ export default function LoginPage() {
                             >
                                 忘記密碼？
                             </button>
-                        </div>
+                        </div> */}
                     </div>
 
                     <div>

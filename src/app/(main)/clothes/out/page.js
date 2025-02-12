@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { format } from 'date-fns';
+import { usePermission } from '@/contexts/PermissionContext';
 
 export default function ClothesOutPage() {
     const router = useRouter();
@@ -9,7 +11,7 @@ export default function ClothesOutPage() {
     const docNo = searchParams.get('docNo');
 
     const [userData, setUserData] = useState(null);
-
+    const [docDate, setDocDate] = useState(format(new Date(), 'yyyy-MM-dd'));
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [documentNo, setDocumentNo] = useState('');
@@ -25,6 +27,8 @@ export default function ClothesOutPage() {
     const [clothesData, setClothesData] = useState([]);
     const [clothesLoading, setClothesLoading] = useState(false);
     const [selectedClothesItems, setSelectedClothesItems] = useState([]);
+
+    const { hasPermission } = usePermission();
 
     useEffect(() => {
         if (docNo) {
@@ -62,6 +66,7 @@ export default function ClothesOutPage() {
                     po: item.po,
                     size: item.size,
                     quantity: item.quantity.toString(),
+                    docDate: item.doc_date,
                     faId: userData.faId,
                     userId: userData.id
                 }));
@@ -195,7 +200,7 @@ export default function ClothesOutPage() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ items }),
+                body: JSON.stringify({ items, docDate, userData }),
             });
 
             const data = await response.json();
@@ -277,7 +282,7 @@ export default function ClothesOutPage() {
 
         try {
             setClothesLoading(true);
-            const response = await fetch(`/api/clothes/in/search?productNo=${encodeURIComponent(clothesSearchProductNo)}`);
+            const response = await fetch(`/api/clothes/out/search?productNo=${encodeURIComponent(clothesSearchProductNo)}`);
             const data = await response.json();
             if (data.success) {
                 setClothesData(data.data);
@@ -330,6 +335,19 @@ export default function ClothesOutPage() {
             <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center space-x-4">
                     <h1 className="text-2xl font-semibold text-gray-800">成品出庫作業</h1>
+                    <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-600">單據日期:</span>
+                        <input
+                            type="date"
+                            value={docDate}
+                            onChange={(e) => setDocDate(e.target.value)}
+                            className={`px-3 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 
+                                ${isEditing
+                                    ? 'bg-gray-100 border-gray-200 cursor-not-allowed'
+                                    : 'border-gray-300'}`}
+                            disabled={loading || isEditing}
+                        />
+                    </div>
                     {documentNo && (
                         <div className="px-3 py-1 bg-gray-100 rounded-md">
                             <span className="text-sm text-gray-600">單據號碼:</span>
@@ -338,13 +356,15 @@ export default function ClothesOutPage() {
                     )}
                 </div>
                 <div className="space-x-2">
-                    <button
-                        onClick={() => setIsClothesModalOpen(true)}
-                        type="button"
-                        className="px-4 py-2 text-purple-600 border border-purple-600 rounded hover:bg-purple-50"
-                    >
-                        資料匯入
-                    </button>
+                    {hasPermission('clothes_out', 'import') && (
+                        <button
+                            onClick={() => setIsClothesModalOpen(true)}
+                            type="button"
+                            className="px-4 py-2 text-purple-600 border border-purple-600 rounded hover:bg-purple-50"
+                        >
+                            資料匯入
+                        </button>
+                    )}
                     <button
                         onClick={openSearchModal}
                         type="button"
@@ -359,14 +379,16 @@ export default function ClothesOutPage() {
                     >
                         新增單據
                     </button> */}
-                    <button
-                        onClick={deleteSelected}
-                        type="button"
-                        className="px-4 py-2 text-red-600 border border-red-600 rounded hover:bg-red-50"
-                        disabled={!items.some(item => item.checked) || loading}
-                    >
-                        刪除選中項目
-                    </button>
+                    {hasPermission('clothes_out', 'delete') && (
+                        <button
+                            onClick={deleteSelected}
+                            type="button"
+                            className="px-4 py-2 text-red-600 border border-red-600 rounded hover:bg-red-50"
+                            disabled={!items.some(item => item.checked) || loading}
+                        >
+                            刪除選中項目
+                        </button>
+                    )}
                     {/* <button
                         onClick={addNewLine}
                         type="button"
@@ -375,14 +397,16 @@ export default function ClothesOutPage() {
                     >
                         新增明細
                     </button> */}
-                    <button
-                        onClick={handleSubmit}
-                        type="button"
-                        disabled={loading}
-                        className="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600"
-                    >
-                        {loading ? '處理中...' : (isEditing ? '更新' : '儲存')}
-                    </button>
+                    {hasPermission('clothes_out', 'save') && (
+                        <button
+                            onClick={handleSubmit}
+                            type="button"
+                            disabled={loading}
+                            className="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600"
+                        >
+                            {loading ? '處理中...' : (isEditing ? '更新' : '儲存')}
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -637,8 +661,8 @@ export default function ClothesOutPage() {
                                                     />
                                                 </th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">廠區</th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">入庫單號</th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">入庫日期</th>
+                                                {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">入庫單號</th> */}
+                                                {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">入庫日期</th> */}
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">貨號</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">顏色</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">PO</th>
@@ -658,8 +682,6 @@ export default function ClothesOutPage() {
                                                         />
                                                     </td>
                                                     <td className="px-4 py-2">{item.fa_id}</td>
-                                                    <td className="px-4 py-2">{item.c_in_no}</td>
-                                                    <td className="px-4 py-2">{new Date(item.created_at).toLocaleDateString()}</td>
                                                     <td className="px-4 py-2">{item.od_no}</td>
                                                     <td className="px-4 py-2">{item.color_name}</td>
                                                     <td className="px-4 py-2">{item.po}</td>

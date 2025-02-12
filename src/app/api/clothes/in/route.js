@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { items } = body;
+    const { items, docDate, userData } = body;
     // 基本驗證
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({
@@ -49,7 +49,6 @@ export async function POST(request) {
     }
 
     const documentNo = `${items[0].faId}I${dateStr}${sequence.toString().padStart(4, '0')}`;
-
     // 使用 transaction 進行資料儲存
     await prisma.$transaction(async (tx) => {
       for (const item of items) {
@@ -62,8 +61,9 @@ export async function POST(request) {
             po: item.po,
             size: item.size,
             quantity: parseInt(item.quantity),
-            user_id: item.userId,
-            fa_id: item.faId
+            doc_date: new Date(docDate),
+            user_id: userData.id,
+            fa_id: userData.faId
           }
         });
       }

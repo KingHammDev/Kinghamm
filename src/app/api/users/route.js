@@ -1,112 +1,89 @@
+// src/app/api/users/route.js
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-// 驗證 schema
-const userSchema = z.object({
-  email: z.string().email('請輸入有效的電子郵件'),
-  name: z.string().min(2, '名稱至少需要 2 個字元'),
-  password: z.string().min(6, '密碼至少需要 6 個字元'),
-  factory: z.string().min(1, '請選擇廠區') 
-});
-
-// 獲取所有使用者
-export async function GET() {
+// 取得使用者列表
+export async function GET(request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const faId = searchParams.get('faId');
+
+    const whereCondition = faId ? { faId } : {};
+
     const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      where: whereCondition,
       orderBy: {
-        createdAt: 'desc',
-      },
+        createdAt: 'desc'
+      }
     });
 
     return NextResponse.json({
       success: true,
-      users,
+      users
     });
+
   } catch (error) {
     console.error('Error fetching users:', error);
     return NextResponse.json({
       success: false,
-      message: '獲取使用者列表時發生錯誤',
+      message: '取得使用者列表失敗'
     }, { status: 500 });
   }
 }
 
-// 創建新使用者
+// 新增使用者
 export async function POST(request) {
   try {
     const body = await request.json();
+    const { email, password, name, faId } = body;
 
-    
-    // 驗證輸入資料
-    const validationResult = userSchema.safeParse(body);
-
-
-    if (!validationResult.success) {
+    // 檢查必填欄位
+    if (!email || !password) {
       return NextResponse.json({
         success: false,
-        message: '輸入資料格式不正確',
-        errors: validationResult.error.errors,
+        message: '請填寫必填欄位'
       }, { status: 400 });
     }
 
-    const { email, name, password, factory } = validationResult.data;
-
-
     // 檢查電子郵件是否已存在
     const existingUser = await prisma.user.findUnique({
-      where: { email: email },
+      where: { email }
     });
 
     if (existingUser) {
       return NextResponse.json({
         success: false,
-        message: '此電子郵件已被使用',
+        message: '此電子郵件已被使用'
       }, { status: 400 });
     }
 
     // 密碼加密
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // 創建新使用者
+    // 建立使用者
     const user = await prisma.user.create({
       data: {
         email,
-        name,
         password: hashedPassword,
-        faId: factory
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        faId: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+        name,
+        faId
+      }
     });
 
     return NextResponse.json({
       success: true,
-      message: '使用者創建成功',
-      user,
+      message: '使用者新增成功',
+      user
     });
 
   } catch (error) {
-    console.error(JSON.stringify(error));
+    console.error('Error creating user:', error);
     return NextResponse.json({
       success: false,
-      message: '創建使用者時發生錯誤',
+      message: '新增使用者失敗'
     }, { status: 500 });
   }
-};
+}

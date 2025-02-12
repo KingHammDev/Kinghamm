@@ -1,67 +1,81 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { checkInventoryBalance } from '@/utils/inventory';
 
 const prisma = new PrismaClient();
 
 export async function DELETE(request, { params }) {
-    try {
-        const { docNo } = params;
-        const body = await request.json();
-        const { itemIds } = body;
+  try {
+    const { docNo } = await params;
+    const body = await request.json();
+    const { itemIds } = body;
 
-        if (!Array.isArray(itemIds) || itemIds.length === 0) {
-            return NextResponse.json({
-                success: false,
-                message: '無效的刪除項目'
-            }, { status: 400 });
-        }
+    // 取得要刪除的項目資料
+    const itemsToDelete = await prisma.clothesIn.findMany({
+      where: {
+        c_in_no: docNo,
+        c_in_id: { in: itemIds }
+      }
+    });
 
-        // 使用交易確保資料一致性
-        await prisma.$transaction(async (tx) => {
-            // 刪除指定的項目
-            await tx.clothesOut.deleteMany({
-                where: {
-                    AND: [
-                        { c_out_no: docNo },
-                        { c_out_id: { in: itemIds } }
-                    ]
-                }
-            });
+    // 檢查庫存平衡
+    const checkResult = await checkInventoryBalance(
+      itemsToDelete.map(item => ({
+        ...item,
+        type: 'in'  // 標記為入庫單據
+      }))
+    );
 
-            // 重新排序剩餘項目的序號
-            const remainingItems = await tx.clothesOut.findMany({
-                where: { c_out_no: docNo },
-                orderBy: { c_out_id: 'asc' }
-            });
-
-            // 逐一更新序號
-            for (let i = 0; i < remainingItems.length; i++) {
-                await tx.clothesOut.update({
-                    where: {
-                        c_out_no_c_out_id: {
-                            c_out_no: docNo,
-                            c_out_id: remainingItems[i].c_out_id
-                        }
-                    },
-                    data: {
-                        c_out_id: i + 1
-                    }
-                });
-            }
-        });
-
-        return NextResponse.json({
-            success: true,
-            message: '刪除成功'
-        });
-
-    } catch (error) {
-        console.error('Delete error:', error);
-        return NextResponse.json({
-            success: false,
-            message: '刪除項目時發生錯誤'
-        }, { status: 500 });
-    } finally {
-        await prisma.$disconnect();
+    if (!checkResult.valid) {
+      return NextResponse.json({
+        success: false,
+        message: checkResult.message
+      }, { status: 400 });
     }
+
+    // 使用交易進行刪除
+    await prisma.$transaction(async (tx) => {
+      // 刪除指定的項目
+      await tx.clothesIn.deleteMany({
+        where: {
+          AND: [
+            { c_in_no: docNo },
+            { c_in_id: { in: itemIds } }
+          ]
+        }
+      });
+
+      // 重新排序剩餘項目的序號
+      const remainingItems = await tx.clothesIn.findMany({
+        where: { c_in_no: docNo },
+        orderBy: { c_in_id: 'asc' }
+      });
+
+      for (let i = 0; i < remainingItems.length; i++) {
+        await tx.clothesIn.update({
+          where: {
+            c_in_no_c_in_id: {
+              c_in_no: docNo,
+              c_in_id: remainingItems[i].c_in_id
+            }
+          },
+          data: {
+            c_in_id: i + 1
+          }
+        });
+      }
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: '刪除成功'
+    });
+
+  } catch (error) {
+    console.error('Delete error:', error);
+    return NextResponse.json({
+      success: false,
+      message: '刪除項目時發生錯誤'
+    }, { status: 500 });
+  }
 }

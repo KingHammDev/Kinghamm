@@ -9,12 +9,12 @@ export async function GET(request, { params }) {
     const { docNo } = await params;
 
     // 取得文件及其所有項目
-    const items = await prisma.clothesIn.findMany({
+    const items = await prisma.clothesAdj.findMany({
       where: {
-        c_in_no: docNo
+        c_adj_no: docNo
       },
       orderBy: {
-        c_in_id: 'asc'
+        c_adj_id: 'asc'
       }
     });
 
@@ -28,7 +28,7 @@ export async function GET(request, { params }) {
     return NextResponse.json({
       success: true,
       document: {
-        c_in_no: docNo
+        c_adj_no: docNo
       },
       items: items
     });
@@ -51,21 +51,21 @@ export async function PUT(request, { params }) {
     const { items } = body;
 
     // 先獲取原有的資料
-    const originalItems = await prisma.clothesIn.findMany({
+    const originalItems = await prisma.clothesAdj.findMany({
       where: {
-        c_in_no: docNo
+        c_adj_no: docNo
       }
     });
 
     // 為每個項目計算數量差異
     const itemChanges = items.map(newItem => {
-      const originalItem = originalItems.find(orig => orig.c_in_id === parseInt(newItem.seqNo));
+      const originalItem = originalItems.find(orig => orig.c_adj_id === parseInt(newItem.seqNo));
       return {
         ...newItem,
         od_no: newItem.productNo,
         fa_id: newItem.faId,
         color_name: newItem.colorName,
-        type: 'in',
+        type: 'adj',
         oldQuantity: originalItem ? originalItem.quantity : 0,
         newQuantity: parseInt(newItem.quantity)
       };
@@ -84,18 +84,18 @@ export async function PUT(request, { params }) {
     // 使用交易進行更新
     await prisma.$transaction(async (tx) => {
       // 先刪除原有的項目
-      await tx.clothesIn.deleteMany({
+      await tx.clothesAdj.deleteMany({
         where: {
-          c_in_no: docNo
+          c_adj_no: docNo
         }
       });
 
       // 新增更新後的項目
       for (const item of items) {
-        await tx.clothesIn.create({
+        await tx.clothesAdj.create({
           data: {
-            c_in_no: docNo,
-            c_in_id: parseInt(item.seqNo),
+            c_adj_no: docNo,
+            c_adj_id: parseInt(item.seqNo),
             fa_id: item.faId,
             od_no: item.productNo,
             color_name: item.colorName,

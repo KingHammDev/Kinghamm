@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { format } from 'date-fns';
+import { usePermission } from '@/contexts/PermissionContext';
 
 export default function ClothesInPage() {
     const router = useRouter();
@@ -9,7 +11,7 @@ export default function ClothesInPage() {
     const docNo = searchParams.get('docNo');
 
     const [userData, setUserData] = useState({});
-
+    const [docDate, setDocDate] = useState(format(new Date(), 'yyyy-MM-dd'));
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [documentNo, setDocumentNo] = useState('');
@@ -26,6 +28,8 @@ export default function ClothesInPage() {
     const [mssqlLoading, setMssqlLoading] = useState(false);
     const [selectedMssqlItems, setSelectedMssqlItems] = useState([]);
 
+    const { hasPermission } = usePermission();
+
     useEffect(() => {
         if (docNo) {
             fetchDocument(docNo);
@@ -38,10 +42,10 @@ export default function ClothesInPage() {
         try {
             const response = await fetch('/api/auth/me');
             const data = await response.json();
+            // console.log(data)
             if (data.success) {
                 setUserData(data.user);
             }
-
         } catch (error) {
             console.error('Error fetching user data:', error);
         }
@@ -55,6 +59,7 @@ export default function ClothesInPage() {
 
             if (data.success) {
                 setDocumentNo(data.document.c_in_no);
+                setDocDate(format(new Date(data.document.doc_date), 'yyyy-MM-dd'));
                 const formattedItems = data.items.map(item => ({
                     checked: false,
                     seqNo: item.c_in_id,
@@ -64,10 +69,10 @@ export default function ClothesInPage() {
                     size: item.size,
                     quantity: item.quantity.toString(),
                     faId: userData.faId,
-                    userId: userData.id
+                    userId: userData.id,
+                    docDate: item.doc_date
                 }));
                 setItems(formattedItems);
-                setIsEditing(true);
             }
         } catch (error) {
             console.error('Error fetching document:', error);
@@ -86,9 +91,7 @@ export default function ClothesInPage() {
                 colorName: '',
                 po: '',
                 size: '',
-                quantity: '',
-                faId: userData.faId,
-                userId: userData.id
+                quantity: ''
             }
         ]);
     };
@@ -196,7 +199,7 @@ export default function ClothesInPage() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ items }),
+                body: JSON.stringify({ items, docDate, userData }),
             });
 
             const data = await response.json();
@@ -332,6 +335,19 @@ export default function ClothesInPage() {
             <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center space-x-4">
                     <h1 className="text-2xl font-semibold text-gray-800">成品入庫作業</h1>
+                    <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-600">單據日期:</span>
+                        <input
+                            type="date"
+                            value={docDate}
+                            onChange={(e) => setDocDate(e.target.value)}
+                            className={`px-3 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 
+                                ${isEditing
+                                    ? 'bg-gray-100 border-gray-200 cursor-not-allowed'
+                                    : 'border-gray-300'}`}
+                            disabled={loading || isEditing}
+                        />
+                    </div>
                     {documentNo && (
                         <div className="px-3 py-1 bg-gray-100 rounded-md">
                             <span className="text-sm text-gray-600">單據號碼:</span>
@@ -340,13 +356,15 @@ export default function ClothesInPage() {
                     )}
                 </div>
                 <div className="space-x-2">
-                    <button
-                        onClick={() => setMssqlModalOpen(true)}
-                        type="button"
-                        className="px-4 py-2 text-purple-600 border border-purple-600 rounded hover:bg-purple-50"
-                    >
-                        資料匯入
-                    </button>
+                    {hasPermission('clothes_in', 'import') && (
+                        <button
+                            onClick={() => setMssqlModalOpen(true)}
+                            type="button"
+                            className="px-4 py-2 text-purple-600 border border-purple-600 rounded hover:bg-purple-50"
+                        >
+                            資料匯入
+                        </button>
+                    )}
                     <button
                         onClick={openSearchModal}
                         type="button"
@@ -354,37 +372,45 @@ export default function ClothesInPage() {
                     >
                         查詢單據
                     </button>
-                    <button
-                        onClick={handleCreateNew}
-                        type="button"
-                        className="px-4 py-2 text-blue-600 border border-blue-600 rounded hover:bg-blue-50"
-                    >
-                        新增單據
-                    </button>
-                    <button
-                        onClick={deleteSelected}
-                        type="button"
-                        className="px-4 py-2 text-red-600 border border-red-600 rounded hover:bg-red-50"
-                        disabled={!items.some(item => item.checked) || loading}
-                    >
-                        刪除選中項目
-                    </button>
-                    <button
-                        onClick={addNewLine}
-                        type="button"
-                        className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
-                        disabled={loading}
-                    >
-                        新增明細
-                    </button>
-                    <button
-                        onClick={handleSubmit}
-                        type="button"
-                        disabled={loading}
-                        className="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600"
-                    >
-                        {loading ? '處理中...' : (isEditing ? '更新' : '儲存')}
-                    </button>
+                    {hasPermission('clothes_in', 'create') && (
+                        <button
+                            onClick={handleCreateNew}
+                            type="button"
+                            className="px-4 py-2 text-blue-600 border border-blue-600 rounded hover:bg-blue-50"
+                        >
+                            新增單據
+                        </button>
+                    )}
+                    {hasPermission('clothes_in', 'delete') && (
+                        <button
+                            onClick={deleteSelected}
+                            type="button"
+                            className="px-4 py-2 text-red-600 border border-red-600 rounded hover:bg-red-50"
+                            disabled={!items.some(item => item.checked) || loading}
+                        >
+                            刪除選中項目
+                        </button>
+                    )}
+                    {hasPermission('clothes_in', 'add_detail') && (
+                        <button
+                            onClick={addNewLine}
+                            type="button"
+                            className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+                            disabled={loading}
+                        >
+                            新增明細
+                        </button>
+                    )}
+                    {hasPermission('clothes_in', 'save') && (
+                        <button
+                            onClick={handleSubmit}
+                            type="button"
+                            disabled={loading}
+                            className="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600"
+                        >
+                            {loading ? '處理中...' : (isEditing ? '更新' : '儲存')}
+                        </button>
+                    )}
                 </div>
             </div>
 

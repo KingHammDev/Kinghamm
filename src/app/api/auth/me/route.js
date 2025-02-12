@@ -19,7 +19,7 @@ export async function GET(request) {
     try {
       const secret = new TextEncoder().encode(process.env.JWT_SECRET);
       const { payload } = await jwtVerify(authToken, secret);
-
+      
       // 從資料庫取得使用者資訊
       const user = await prisma.user.findUnique({
         where: { id: payload.userId },

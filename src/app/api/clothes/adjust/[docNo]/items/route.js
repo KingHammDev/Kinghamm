@@ -11,10 +11,10 @@ export async function DELETE(request, { params }) {
     const { itemIds } = body;
 
     // 取得要刪除的項目資料
-    const itemsToDelete = await prisma.clothesOut.findMany({
+    const itemsToDelete = await prisma.clothesAdj.findMany({
       where: {
-        c_out_no: docNo,
-        c_out_id: { in: itemIds }
+        c_adj_no: docNo,
+        c_adj_id: { in: itemIds }
       }
     });
 
@@ -22,7 +22,7 @@ export async function DELETE(request, { params }) {
     const checkResult = await checkInventoryBalance(
       itemsToDelete.map(item => ({
         ...item,
-        type: 'out'  // 標記為出庫單據
+        type: 'adj'  // 標記為調整單據
       })), false, true
     );
 
@@ -36,31 +36,31 @@ export async function DELETE(request, { params }) {
     // 使用交易進行刪除
     await prisma.$transaction(async (tx) => {
       // 刪除指定的項目
-      await tx.clothesOut.deleteMany({
+      await tx.clothesAdj.deleteMany({
         where: {
           AND: [
-            { c_out_no: docNo },
-            { c_out_id: { in: itemIds } }
+            { c_adj_no: docNo },
+            { c_adj_id: { in: itemIds } }
           ]
         }
       });
 
       // 重新排序剩餘項目的序號
-      const remainingItems = await tx.clothesOut.findMany({
-        where: { c_out_no: docNo },
-        orderBy: { c_out_id: 'asc' }
+      const remainingItems = await tx.clothesAdj.findMany({
+        where: { c_adj_no: docNo },
+        orderBy: { c_adj_id: 'asc' }
       });
 
       for (let i = 0; i < remainingItems.length; i++) {
-        await tx.clothesOut.update({
+        await tx.clothesAdj.update({
           where: {
-            c_out_no_c_out_id: {
-              c_out_no: docNo,
-              c_out_id: remainingItems[i].c_out_id
+            c_adj_no_c_adj_id: {
+              c_adj_no: docNo,
+              c_adj_id: remainingItems[i].c_adj_id
             }
           },
           data: {
-            c_out_id: i + 1
+            c_adj_id: i + 1
           }
         });
       }

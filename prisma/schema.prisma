@@ -15,6 +15,7 @@ model User {
   faId      String?
   createdAt DateTime @default(dbgenerated("TIMEZONE('Asia/Taipei', NOW())"))
   updatedAt DateTime @updatedAt @db.Timestamptz
+  permissions  UserPermission[]
 }
 
 model ClothesIn {
@@ -26,6 +27,7 @@ model ClothesIn {
   po String
   size String
   quantity   Int
+  doc_date   DateTime
   created_at DateTime @default(dbgenerated("TIMEZONE('Asia/Taipei', NOW())"))
   updated_at DateTime @updatedAt @db.Timestamptz
   user_id    Int
@@ -42,6 +44,7 @@ model ClothesOut {
   po String
   size String
   quantity   Int
+  doc_date   DateTime
   created_at DateTime @default(dbgenerated("TIMEZONE('Asia/Taipei', NOW())"))
   updated_at DateTime @updatedAt @db.Timestamptz
   user_id    Int
@@ -58,9 +61,40 @@ model ClothesAdj {
   po String
   size String
   quantity   Int
+  doc_date   DateTime
   created_at DateTime @default(dbgenerated("TIMEZONE('Asia/Taipei', NOW())"))
   updated_at DateTime @updatedAt @db.Timestamptz
   user_id    Int
 
   @@unique([c_adj_no, c_adj_id])
+}
+
+
+model MonthlyBalance {
+  year        Int
+  month       Int
+  fa_id       String
+  od_no       String
+  color_name  String
+  po          String
+  size        String
+  quantity    Int
+  created_at  DateTime @default(dbgenerated("TIMEZONE('Asia/Taipei', NOW())"))
+  updated_at  DateTime @updatedAt @db.Timestamptz
+  user_id     Int
+
+  @@unique([year, month, fa_id, od_no, color_name, po, size])
+}
+
+
+model UserPermission {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  moduleId  String   // 模組識別碼，例如: clothes_in, clothes_out
+  actions   String[] // 允許的操作，例如: import, create, delete, save
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(dbgenerated("TIMEZONE('Asia/Taipei', NOW())"))
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  @@unique([userId, moduleId])
 }
