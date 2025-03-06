@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db init": "npx prisma generate && npx prisma db push"
   },
   "dependencies": {
     "@prisma/client": "^6.1.0",
