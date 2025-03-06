@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 export async function GET(request) {
   try {
     const authToken = request.cookies.get('auth_token')?.value;
-    
+
     if (!authToken) {
       return NextResponse.json({
         success: false,
@@ -16,16 +16,29 @@ export async function GET(request) {
       }, { status: 401 });
     }
 
+
     try {
       const secret = new TextEncoder().encode(process.env.JWT_SECRET);
       const { payload } = await jwtVerify(authToken, secret);
-      
+
+      if (payload.userId === 'admin') {
+        const user = {
+          id: 'admin',
+          email: 'admin@kinghamm.com',
+          name: 'admin',
+          faId: 'KHM'
+        }
+        return NextResponse.json({
+          success: true,
+          user
+        });
+      }
       // 從資料庫取得使用者資訊
       const user = await prisma.user.findUnique({
         where: { id: payload.userId },
-        select: { 
-          id: true, 
-          email: true, 
+        select: {
+          id: true,
+          email: true,
           name: true,
           faId: true
         }

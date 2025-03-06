@@ -88,56 +88,57 @@ export async function POST(request) {
         const [fa_id, od_no, color_name, po, size] = key.split('-');
 
         // 計算期初（上月結存）
-        const opening = lastMonthBalance.find(item => 
-          item.fa_id === fa_id && 
-          item.od_no === od_no && 
-          item.color_name === color_name && 
-          item.po === po && 
+        const opening = lastMonthBalance.find(item =>
+          item.fa_id === fa_id &&
+          item.od_no === od_no &&
+          item.color_name === color_name &&
+          item.po === po &&
           item.size === size
         )?.quantity || 0;
 
         // 計算當月異動
-        const inQty = inData.find(item => 
-          item.fa_id === fa_id && 
-          item.od_no === od_no && 
-          item.color_name === color_name && 
-          item.po === po && 
+        const inQty = inData.find(item =>
+          item.fa_id === fa_id &&
+          item.od_no === od_no &&
+          item.color_name === color_name &&
+          item.po === po &&
           item.size === size
         )?._sum.quantity || 0;
 
-        const outQty = outData.find(item => 
-          item.fa_id === fa_id && 
-          item.od_no === od_no && 
-          item.color_name === color_name && 
-          item.po === po && 
+        const outQty = outData.find(item =>
+          item.fa_id === fa_id &&
+          item.od_no === od_no &&
+          item.color_name === color_name &&
+          item.po === po &&
           item.size === size
         )?._sum.quantity || 0;
 
-        const adjQty = adjData.find(item => 
-          item.fa_id === fa_id && 
-          item.od_no === od_no && 
-          item.color_name === color_name && 
-          item.po === po && 
+        const adjQty = adjData.find(item =>
+          item.fa_id === fa_id &&
+          item.od_no === od_no &&
+          item.color_name === color_name &&
+          item.po === po &&
           item.size === size
         )?._sum.quantity || 0;
 
         // 計算結存
         const closing = opening + inQty - outQty + adjQty;
-
         // 儲存結存資料
-        await tx.monthlyBalance.create({
-          data: {
-            year,
-            month,
-            fa_id,
-            od_no,
-            color_name,
-            po,
-            size,
-            quantity: closing,
-            user_id: userId
-          }
-        });
+        if (closing !== 0) {
+          await tx.monthlyBalance.create({
+            data: {
+              year,
+              month,
+              fa_id,
+              od_no,
+              color_name,
+              po,
+              size,
+              quantity: closing,
+              user_id: userId
+            }
+          });
+        }
       }
     });
 

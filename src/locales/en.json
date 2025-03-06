@@ -1,0 +1,108 @@
+{
+    "app": {
+        "(main)": {
+            "layout": {
+                "clothes_management": "Clothes Management System",
+                "logout": "Logout"
+            },
+            "dashboard": {
+                "welcome": "Welcome to the Management System",
+                "description": "Please use the menu on the left to proceed."
+            },
+            "clothes": {
+                "public": {
+                    "check_qty": "Quantity cannot be less than 0",
+                    "check_select": "Please select an item to delete",
+                    "delete_fail": "Deletion failed",
+                    "delete_error": "An error occurred while deleting",
+                    "check_input": "Please fill in all required fields",
+                    "update_success": "Update successful",
+                    "save_success": "Save successful",
+                    "save_fail": "Save failed",
+                    "save_error": "An error occurred while saving",
+                    "check_order": "Please enter an order number",
+                    "request_fail": "Query failed",
+                    "request_error": "An error occurred while querying",
+                    "doc_date": "Document Date",
+                    "doc_no": "Document Number",
+                    "btn_data_input": "Data Import",
+                    "btn_doc_request": "Query Document",
+                    "btn_doc_create": "Create Document",
+                    "btn_select_delete": "Delete Selected Items",
+                    "btn_add_row": "Add Detail",
+                    "input_order_request": "Please enter an order number to query",
+                    "processing": "Processing...",
+                    "update": "Update",
+                    "save": "Save",
+                    "seq": "Sequence",
+                    "order": "Order Number",
+                    "color": "Color",
+                    "po": "PO",
+                    "size": "Size",
+                    "qty": "Quantity",
+                    "request": "Query",
+                    "requesting": "Querying...",
+                    "create_date": "Creation Date",
+                    "item_qty": "Item Quantity",
+                    "total_qty": "Total Quantity",
+                    "count": "Entries",
+                    "select": "Select",
+                    "factory": "Factory",
+                    "add_selected": "Add Selected Items"
+                },
+                "in": {
+                    "title": "Clothes In Operations",
+                    "erp_shipping_data": "ERP Shipping Data",
+                    "shipping_no": "Shipping Number",
+                    "shipping_date": "Shipping Date",
+                    "add_selected": "Add Selected Items"
+                },
+                "out": {
+                    "title": "Clothes Out Operations",
+                    "inventory_data": "Finished Goods Inventory Data"
+                },
+                "adjust": {
+                    "title": "Clothes Adjust Operations"
+                },
+                "status": {
+                    "select_factory": "Please select a factory",
+                    "cant_export": "No data available for export",
+                    "export_fail": "Export failed",
+                    "get_data_fail": "Failed to retrieve details",
+                    "get_data_error": "An error occurred while retrieving details",
+                    "clothes_report": "Inventory Report",
+                    "year_month": "Year-Month",
+                    "year": "Year",
+                    "month": "Month",
+                    "excel_export": "Export to Excel",
+                    "check_detail": "View Details",
+                    "select_year_month_click": "Please select Year-Month and click the query button",
+                    "history": "Transaction Details",
+                    "total": "Total",
+                    "in_detail": "Inbound Details",
+                    "date": "Date",
+                    "create_user": "Created By",
+                    "out_detail": "Outbound Details",
+                    "adjust_detail": "Adjustment Details",
+                    "no_history": "No transaction records for this item in the current month",
+                    "begin": "Beginning",
+                    "in": "In",
+                    "out": "Out",
+                    "adjust": "Adjust",
+                    "balance": "Balance"
+                }
+            }
+        }
+    },
+    "components": {
+        "siderbar": {
+            "clothes_management": "Clothes Management",
+            "clothes_in": "In",
+            "clothes_out": "Out",
+            "clothes_adj": "Adjust",
+            "clothes_status": "Inventory",
+            "users": "User Management",
+            "settings": "System Management"
+        }
+    }
+}

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { format } from 'date-fns';
 import { usePermission } from '@/contexts/PermissionContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function ClothesOutPage() {
     const router = useRouter();
@@ -29,6 +30,7 @@ export default function ClothesOutPage() {
     const [selectedClothesItems, setSelectedClothesItems] = useState([]);
 
     const { hasPermission } = usePermission();
+    const { t } = useTranslation();
 
     useEffect(() => {
         if (docNo) {
@@ -100,7 +102,7 @@ export default function ClothesOutPage() {
     const handleInputChange = (index, field, value) => {
         if (field === 'quantity') {
             if (value < 0) {
-                alert("數量不可小於0")
+                alert(t('app.(main).clothes.public.check_qty'))
                 return
             }
         }
@@ -127,7 +129,7 @@ export default function ClothesOutPage() {
 
     const deleteSelected = async () => {
         if (!items.some(item => item.checked)) {
-            alert('請先選擇要刪除的項目');
+            alert(t('app.(main).clothes.public.check_select'));
             return;
         }
 
@@ -149,7 +151,7 @@ export default function ClothesOutPage() {
 
                 const data = await response.json();
                 if (!data.success) {
-                    throw new Error(data.message || '刪除失敗');
+                    throw new Error(data.message || t('app.(main).clothes.public.delete_fail'));
                 }
             }
 
@@ -174,7 +176,7 @@ export default function ClothesOutPage() {
 
         } catch (error) {
             console.error('Delete error:', error);
-            alert(error.message || '刪除時發生錯誤');
+            alert(error.message || t('app.(main).clothes.public.delete_error'));
         } finally {
             setLoading(false);
         }
@@ -182,7 +184,7 @@ export default function ClothesOutPage() {
 
     const handleSubmit = async () => {
         if (items.some(item => !item.productNo || !item.quantity || !item.po || !item.colorName || !item.size)) {
-            alert('請填寫所有必填欄位');
+            alert(t('app.(main).clothes.public.check_input'));
             return;
         }
 
@@ -206,17 +208,17 @@ export default function ClothesOutPage() {
             const data = await response.json();
 
             if (data.success) {
-                alert(isEditing ? '更新成功' : '儲存成功');
+                alert(isEditing ? t('app.(main).clothes.public.update_success') : t('app.(main).clothes.public.save_success'));
                 if (!isEditing) {
                     setDocumentNo(data.documentNo);
                     setIsEditing(true);
                 }
             } else {
-                alert(data.message || '儲存失敗');
+                alert(data.message || t('app.(main).clothes.public.save_fail'));
             }
         } catch (error) {
             console.error('Save error:', error);
-            alert('儲存時發生錯誤');
+            alert(t('app.(main).clothes.public.save_error'));
         } finally {
             setLoading(false);
         }
@@ -241,7 +243,7 @@ export default function ClothesOutPage() {
     // 查詢單據按鈕
     const handleSearch = async () => {
         if (!searchProductNo.trim()) {
-            setSearchError('請輸入貨號');
+            setSearchError(t('app.(main).clothes.public.check_order'));
             return;
         }
 
@@ -258,7 +260,7 @@ export default function ClothesOutPage() {
             }
         } catch (error) {
             console.error('Error searching documents:', error);
-            setSearchError('查詢時發生錯誤');
+            setSearchError(t('app.(main).clothes.public.request_error'));
         } finally {
             setSearchLoading(false);
         }
@@ -276,7 +278,7 @@ export default function ClothesOutPage() {
 
     const handleClothesInSearch = async () => {
         if (!clothesSearchProductNo.trim()) {
-            alert('請輸入貨號');
+            alert(t('app.(main).clothes.public.check_order'));
             return;
         }
 
@@ -291,7 +293,7 @@ export default function ClothesOutPage() {
             }
         } catch (error) {
             console.error('search error:', error);
-            alert(error.message || '查詢時發生錯誤');
+            alert(error.message || t('app.(main).clothes.public.request_error'));
         } finally {
             setClothesLoading(false);
         }
@@ -334,9 +336,9 @@ export default function ClothesOutPage() {
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center space-x-4">
-                    <h1 className="text-2xl font-semibold text-gray-800">成品出庫作業</h1>
+                    <h1 className="text-2xl font-semibold text-gray-800">{t('app.(main).clothes.out.title')}</h1>
                     <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-600">單據日期:</span>
+                        <span className="text-sm text-gray-600">{t('app.(main).clothes.public.doc_date')}:</span>
                         <input
                             type="date"
                             value={docDate}
@@ -350,7 +352,7 @@ export default function ClothesOutPage() {
                     </div>
                     {documentNo && (
                         <div className="px-3 py-1 bg-gray-100 rounded-md">
-                            <span className="text-sm text-gray-600">單據號碼:</span>
+                            <span className="text-sm text-gray-600">{t('app.(main).clothes.public.doc_no')}:</span>
                             <span className="ml-2 font-medium text-gray-800">{documentNo}</span>
                         </div>
                     )}
@@ -362,7 +364,7 @@ export default function ClothesOutPage() {
                             type="button"
                             className="px-4 py-2 text-purple-600 border border-purple-600 rounded hover:bg-purple-50"
                         >
-                            資料匯入
+                            {t('app.(main).clothes.public.btn_data_input')}
                         </button>
                     )}
                     <button
@@ -370,7 +372,7 @@ export default function ClothesOutPage() {
                         type="button"
                         className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
                     >
-                        查詢單據
+                        {t('app.(main).clothes.public.btn_doc_request')}
                     </button>
                     {/* <button
                         onClick={handleCreateNew}
@@ -386,7 +388,7 @@ export default function ClothesOutPage() {
                             className="px-4 py-2 text-red-600 border border-red-600 rounded hover:bg-red-50"
                             disabled={!items.some(item => item.checked) || loading}
                         >
-                            刪除選中項目
+                            {t('app.(main).clothes.public.btn_select_delete')}
                         </button>
                     )}
                     {/* <button
@@ -404,7 +406,7 @@ export default function ClothesOutPage() {
                             disabled={loading}
                             className="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600"
                         >
-                            {loading ? '處理中...' : (isEditing ? '更新' : '儲存')}
+                            {loading ? t('app.(main).clothes.public.processing') : (isEditing ? t('app.(main).clothes.public.update') : t('app.(main).clothes.public.save'))}
                         </button>
                     )}
                 </div>
@@ -430,12 +432,12 @@ export default function ClothesOutPage() {
                                     className="rounded border-gray-300"
                                 />
                             </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">序號</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">貨號</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">顏色</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">PO</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">尺寸</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">數量</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.seq')}</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.order')}</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.color')}</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.po')}</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.size')}</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.qty')}</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -458,7 +460,7 @@ export default function ClothesOutPage() {
                                         value={item.productNo}
                                         onChange={(e) => handleInputChange(index, 'productNo', e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
                                         className="w-full border-2 border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="請輸入貨號"
+                                        placeholder="Order"
                                         readOnly
                                     />
                                 </td>
@@ -468,7 +470,7 @@ export default function ClothesOutPage() {
                                         value={item.colorName}
                                         onChange={(e) => handleInputChange(index, 'colorName', e.target.value)}
                                         className="w-full border-2 border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="請輸入顏色"
+                                        placeholder="Color"
                                         readOnly
                                     />
                                 </td>
@@ -478,7 +480,7 @@ export default function ClothesOutPage() {
                                         value={item.po}
                                         onChange={(e) => handleInputChange(index, 'po', e.target.value)}
                                         className="w-full border-2 border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="請輸入PO"
+                                        placeholder="PO"
                                         readOnly
                                     />
                                 </td>
@@ -488,7 +490,7 @@ export default function ClothesOutPage() {
                                         value={item.size}
                                         onChange={(e) => handleInputChange(index, 'size', e.target.value)}
                                         className="w-full border-2 border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="請輸入尺寸"
+                                        placeholder="Size"
                                         readOnly
                                     />
                                 </td>
@@ -498,7 +500,7 @@ export default function ClothesOutPage() {
                                         value={item.quantity}
                                         onChange={(e) => handleInputChange(index, 'quantity', e.target.value)}
                                         className="w-full border-2 border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="請輸入數量"
+                                        placeholder="Quantity"
                                         min="1"
                                     />
                                 </td>
@@ -511,7 +513,7 @@ export default function ClothesOutPage() {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-semibold">查詢單據</h2>
+                            <h2 className="text-xl font-semibold">{t('app.(main).clothes.public.input_order_request')}</h2>
                             <button
                                 onClick={() => {
                                     setIsSearchModalOpen(false);
@@ -531,7 +533,7 @@ export default function ClothesOutPage() {
                                     type="text"
                                     value={searchProductNo}
                                     onChange={handleSearchProductNoChange}
-                                    placeholder="請輸入貨號"
+                                    placeholder="Order"
                                     className="flex-1 border-2 border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                                 <button
@@ -539,7 +541,7 @@ export default function ClothesOutPage() {
                                     disabled={searchLoading}
                                     className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
                                 >
-                                    {searchLoading ? '查詢中...' : '查詢'}
+                                    {searchLoading ? t('app.(main).clothes.public.requesting') : t('app.(main).clothes.public.request')}
                                 </button>
                             </div>
                             {searchError && (
@@ -553,16 +555,16 @@ export default function ClothesOutPage() {
                                     <thead className="bg-gray-50">
                                         <tr>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                單據號碼
+                                                {t('app.(main).clothes.public.doc_no')}
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                建立日期
+                                                {t('app.(main).clothes.public.create_date')}
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                品項數量
+                                                {t('app.(main).clothes.public.item_qty')}
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                總數量
+                                                {t('app.(main).clothes.public.total_qty')}
                                             </th>
                                             <th className="px-6 py-3"></th>
                                         </tr>
@@ -577,7 +579,7 @@ export default function ClothesOutPage() {
                                                     {new Date(doc.created_at).toLocaleDateString()}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {doc.itemCount} 項
+                                                    {doc.itemCount} {t('app.(main).clothes.public.count')}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                     {doc.totalQuantity}
@@ -587,7 +589,7 @@ export default function ClothesOutPage() {
                                                         onClick={() => handleSelectDocument(doc.c_out_no)}
                                                         className="text-indigo-600 hover:text-indigo-900"
                                                     >
-                                                        選擇
+                                                        {t('app.(main).clothes.public.select')}
                                                     </button>
                                                 </td>
                                             </tr>
@@ -596,7 +598,7 @@ export default function ClothesOutPage() {
                                 </table>
                             ) : !searchLoading && (
                                 <div className="text-center py-8 text-gray-500">
-                                    請輸入貨號進行查詢
+                                    {t('app.(main).clothes.public.input_order_request')}
                                 </div>
                             )}
                         </div>
@@ -607,7 +609,7 @@ export default function ClothesOutPage() {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg p-6 w-full max-w-6xl">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-semibold">成品庫存資料</h2>
+                            <h2 className="text-xl font-semibold">{t('app.(main).clothes.out.inventory_data')}</h2>
                             <button
                                 onClick={() => {
                                     setIsClothesModalOpen(false);
@@ -627,7 +629,7 @@ export default function ClothesOutPage() {
                                     type="text"
                                     value={clothesSearchProductNo}
                                     onChange={(e) => setClothesSearchProductNo(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
-                                    placeholder="請輸入貨號"
+                                    placeholder="Order"
                                     className="flex-1 border-2 border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                                 <button
@@ -635,7 +637,7 @@ export default function ClothesOutPage() {
                                     disabled={clothesLoading}
                                     className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
                                 >
-                                    {clothesLoading ? '查詢中...' : '查詢'}
+                                    {clothesLoading ? t('app.(main).clothes.public.requesting'): t('app.(main).clothes.public.request')}
                                 </button>
                             </div>
                         </div>
@@ -660,14 +662,14 @@ export default function ClothesOutPage() {
                                                         className="rounded border-gray-300"
                                                     />
                                                 </th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">廠區</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.factory')}</th>
                                                 {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">入庫單號</th> */}
                                                 {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">入庫日期</th> */}
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">貨號</th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">顏色</th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">PO</th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">尺寸</th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">數量</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.order')}</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.color')}</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.po')}</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.size')}</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.qty')}</th>
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white divide-y divide-gray-200">
@@ -697,13 +699,13 @@ export default function ClothesOutPage() {
                                             disabled={selectedClothesItems.length === 0}
                                             className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50"
                                         >
-                                            加入選中項目
+                                            {t('app.(main).clothes.public.add_selected')}
                                         </button>
                                     </div>
                                 </>
                             ) : !clothesLoading && (
                                 <div className="text-center py-8 text-gray-500">
-                                    請輸入貨號進行查詢
+                                    {t('app.(main).clothes.public.input_order_request')}
                                 </div>
                             )}
                         </div>

@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { initializeMssqlPool } from "@/lib/mssql";
+import { LanguageProvider } from '@/contexts/LanguageContext'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "KingHamm App",
-  description: "KingHamm",
+  title: "Clothes Management",
+  description: "Clothes Management",
 };
 
 initializeMssqlPool()
@@ -31,7 +32,9 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

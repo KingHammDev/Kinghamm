@@ -37,6 +37,7 @@ export async function GET(request) {
       // 上個月結存資料
       const lastMonthBalance = await tx.monthlyBalance.findMany({
         where: {
+          fa_id: factory,
           year: lastMonthStart.getFullYear(),
           month: lastMonthStart.getMonth() + 1
         }

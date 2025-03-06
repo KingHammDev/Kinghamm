@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { utils, writeFile } from 'xlsx';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // 廠區選項
 const FACTORY_OPTIONS = [
@@ -20,11 +21,11 @@ export default function ClothesStatusPage() {
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [detailData, setDetailData] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
-
+  const { t } = useTranslation();
   // 查詢資料
   const handleSearch = async () => {
     if (!selectedFactory) {
-      alert('請選擇廠區');
+      alert(t('app.(main).clothes.status.select_factory'));
       return;
     }
 
@@ -41,11 +42,11 @@ export default function ClothesStatusPage() {
         setData(result.data);
         setShowData(true);
       } else {
-        alert(result.message || '查詢失敗');
+        alert(result.message || t('app.(main).clothes.public.request_fail'));
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-      alert('查詢時發生錯誤');
+      alert(t('app.(main).clothes.public.request_error'));
     } finally {
       setLoading(false);
     }
@@ -64,11 +65,11 @@ export default function ClothesStatusPage() {
         setDetailData(result.data);
         setSelectedDetail(item);
       } else {
-        alert(result.message || '取得明細失敗');
+        alert(result.message || t('app.(main).clothes.status.get_data_fail'));
       }
     } catch (error) {
       console.error('Error fetching detail:', error);
-      alert('取得明細時發生錯誤');
+      alert(t('app.(main).clothes.status.get_data_error'));
     } finally {
       setLoadingDetail(false);
     }
@@ -76,7 +77,7 @@ export default function ClothesStatusPage() {
 
   const handleExport = () => {
     if (!data.length) {
-      alert('沒有可匯出的資料');
+      alert(t('app.(main).clothes.status.cant_export'));
       return;
     }
 
@@ -115,16 +116,16 @@ export default function ClothesStatusPage() {
 
       // 建立工作簿
       const wb = utils.book_new();
-      utils.book_append_sheet(wb, ws, '進耗存報表');
+      utils.book_append_sheet(wb, ws, t('app.(main).clothes.status.clothes_report'));
 
       // 產生檔案名稱
-      const fileName = `進耗存報表_${selectedFactory}_${yearMonth.replace('-', '')}.xlsx`;
+      const fileName = `t('app.(main).clothes.status.clothes_report')_${selectedFactory}_${yearMonth.replace('-', '')}.xlsx`;
 
       // 下載檔案
       writeFile(wb, fileName);
     } catch (error) {
       console.error('Export error:', error);
-      alert('匯出失敗');
+      alert(t('app.(main).clothes.status.export_fail'));
     }
   };
 
@@ -132,16 +133,16 @@ export default function ClothesStatusPage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center space-x-4">
-          <h1 className="text-2xl font-semibold text-gray-800">進耗存報表</h1>
+          <h1 className="text-2xl font-semibold text-gray-800">{t('app.(main).clothes.status.clothes_report')}</h1>
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">廠區:</span>
+            <span className="text-sm text-gray-600">{t('app.(main).clothes.public.factory')}:</span>
             <select
               value={selectedFactory}
               onChange={(e) => setSelectedFactory(e.target.value)}
               className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={loading}
             >
-              <option value="">請選擇廠區</option>
+              <option value="">{t('app.(main).clothes.status.select_factory')}</option>
               {FACTORY_OPTIONS.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -150,7 +151,7 @@ export default function ClothesStatusPage() {
             </select>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">年月:</span>
+            <span className="text-sm text-gray-600">{t('app.(main).clothes.status.year_month')}:</span>
             <input
               type="month"
               value={yearMonth}
@@ -163,7 +164,7 @@ export default function ClothesStatusPage() {
               disabled={loading}
               className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
             >
-              {loading ? '查詢中...' : '查詢'}
+              {loading ? t('app.(main).clothes.public.requesting') : t('app.(main).clothes.public.request')}
             </button>
             <button
               onClick={handleExport}
@@ -182,7 +183,7 @@ export default function ClothesStatusPage() {
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                 />
               </svg>
-              匯出 Excel
+              {t('app.(main).clothes.status.excel_export')}
             </button>
           </div>
         </div>
@@ -195,21 +196,21 @@ export default function ClothesStatusPage() {
       ) : showData ? (  // 只有在 showData 為 true 時才顯示表格
         <div className="overflow-x-auto">
           <div className="mb-4 text-lg font-medium">
-            {yearMonth.replace('-', '年')}月 進耗存報表
+            {yearMonth.replace('-', t('app.(main).clothes.status.year'))}{t('app.(main).clothes.status.month')} {t('app.(main).clothes.status.clothes_report')}
           </div>
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">廠區</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">貨號</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">顏色</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">PO</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">尺寸</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">期初</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">入庫</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">出庫</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">調整</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">結存</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.factory')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.order')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.color')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.po')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.size')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.status.begin')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.status.in')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.status.out')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.status.adjust')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.status.balance')}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -230,7 +231,7 @@ export default function ClothesStatusPage() {
                       onClick={() => handleViewDetail(item)}
                       className="px-3 py-1.5 text-sm font-medium text-blue-600 border border-blue-600 rounded hover:bg-blue-50 transition-colors duration-200"
                     >
-                      查看明細
+                      {t('app.(main).clothes.status.check_detail')}
                     </button>
                   </td>
                 </tr>
@@ -240,7 +241,7 @@ export default function ClothesStatusPage() {
         </div>
       ) : (
         <div className="text-center py-8 text-gray-500">
-          請選擇年月後點擊查詢按鈕
+          {t('app.(main).clothes.status.select_year_month_click')}
         </div>
       )}
       {/* 明細對話框 */}
@@ -250,7 +251,7 @@ export default function ClothesStatusPage() {
           <div className="bg-white rounded-lg p-6 w-full max-w-6xl max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">
-                {selectedDetail.fa_id} - {selectedDetail.od_no} ({selectedDetail.color_name}, {selectedDetail.po}, {selectedDetail.size}) 異動明細
+                {selectedDetail.fa_id} - {selectedDetail.od_no} ({selectedDetail.color_name}, {selectedDetail.po}, {selectedDetail.size}) {t('app.(main).clothes.status.history')}
               </h3>
               <button
                 onClick={() => {
@@ -273,18 +274,18 @@ export default function ClothesStatusPage() {
                 {detailData?.inData.length > 0 && (
                   <div className="mb-8">  {/* 加大間距 */}
                     <div className="flex items-center mb-3 pb-2 border-b-2 border-indigo-500"> {/* 新增底線及樣式 */}
-                      <h4 className="text-lg font-semibold text-indigo-700">入庫明細</h4>
+                      <h4 className="text-lg font-semibold text-indigo-700">{t('app.(main).clothes.status.in_detail')}</h4>
                       <span className="ml-2 px-2 py-1 bg-indigo-100 text-indigo-700 text-sm rounded">
-                        共 {detailData.inData.length} 筆
+                      {t('app.(main).clothes.status.total')} {detailData.inData.length} {t('app.(main).clothes.public.count')}
                       </span>
                     </div>
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">單據號碼</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">日期</th>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">數量</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">建立人員</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.doc_no')}</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.status.date')}</th>
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.qty')}</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.status.create_user')}</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
@@ -305,18 +306,18 @@ export default function ClothesStatusPage() {
                 {detailData?.outData.length > 0 && (
                   <div className="mb-8">
                     <div className="flex items-center mb-3 pb-2 border-b-2 border-red-500">
-                      <h4 className="text-lg font-semibold text-red-700">出庫明細</h4>
+                      <h4 className="text-lg font-semibold text-red-700">{t('app.(main).clothes.status.out_detail')}</h4>
                       <span className="ml-2 px-2 py-1 bg-red-100 text-red-700 text-sm rounded">
-                        共 {detailData.outData.length} 筆
+                      {t('app.(main).clothes.status.total')} {detailData.outData.length} {t('app.(main).clothes.public.count')}
                       </span>
                     </div>
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">單據號碼</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">日期</th>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">數量</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">建立人員</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.doc_no')}</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.status.date')}</th>
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.qty')}</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.status.create_user')}</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
@@ -337,18 +338,18 @@ export default function ClothesStatusPage() {
                 {detailData?.adjData.length > 0 && (
                   <div className="mb-8">
                     <div className="flex items-center mb-3 pb-2 border-b-2 border-green-500">
-                      <h4 className="text-lg font-semibold text-green-700">調整明細</h4>
+                      <h4 className="text-lg font-semibold text-green-700">{t('app.(main).clothes.status.adjust_detail')}</h4>
                       <span className="ml-2 px-2 py-1 bg-green-100 text-green-700 text-sm rounded">
-                        共 {detailData.adjData.length} 筆
+                      {t('app.(main).clothes.status.total')} {detailData.adjData.length} {t('app.(main).clothes.public.count')}
                       </span>
                     </div>
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">單據號碼</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">日期</th>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">數量</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">建立人員</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.doc_no')}</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.status.date')}</th>
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.qty')}</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.status.create_user')}</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
@@ -368,7 +369,7 @@ export default function ClothesStatusPage() {
                 {/* 如果沒有任何明細資料，顯示提示訊息 */}
                 {(!detailData?.inData.length && !detailData?.outData.length && !detailData?.adjData.length) && (
                   <div className="text-center py-8 text-gray-500">
-                    此項目在本月份無任何異動紀錄
+                    {t('app.(main).clothes.status.no_history')}
                   </div>
                 )}
               </>

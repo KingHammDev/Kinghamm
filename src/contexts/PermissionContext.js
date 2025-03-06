@@ -16,6 +16,7 @@ const PermissionContext = createContext(defaultContextValue);
 export function PermissionProvider({ children }) {
   const [permissions, setPermissions] = useState({});
   const [loading, setLoading] = useState(true);
+  const [admin, setAdmin] = useState(false)
 
   const loadUserPermissions = async () => {
     try {
@@ -23,6 +24,11 @@ export function PermissionProvider({ children }) {
       const response = await fetch('/api/auth/me');
       const data = await response.json();
       
+      if (data.success && data.user.id === 'admin') {
+        setAdmin(true)
+        return
+      }
+
       if (data.success && data.user) {
         const permResponse = await fetch(`/api/users/${data.user.id}/permissions`);
         const permData = await permResponse.json();
@@ -50,10 +56,10 @@ export function PermissionProvider({ children }) {
     permissions,
     loading,
     hasPermission: (moduleId, actionId) => {
-      return permissions[moduleId]?.includes(actionId) || false;
+      return admin ? admin : permissions[moduleId]?.includes(actionId) || false;
     },
     canShowModule: (moduleId) => {
-      return permissions[moduleId]?.includes('view') || false;
+      return admin ? admin : permissions[moduleId]?.includes('view') || false;
     },
     reloadPermissions: loadUserPermissions // 匯出重新載入函數
   };

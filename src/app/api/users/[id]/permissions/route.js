@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 // 取得使用者權限
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     const permissions = await prisma.userPermission.findMany({
       where: {
@@ -31,7 +31,7 @@ export async function GET(request, { params }) {
 // 更新使用者權限
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const { permissions } = await request.json();
 
     await prisma.$transaction(async (tx) => {

@@ -12,17 +12,18 @@ import {
     LineChart,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-
+import { useTranslation } from '@/hooks/useTranslation'
 
 export default function Siderbar({ isSidebarOpen }) {
     const [isClothesOpen, setClothesOpen] = useState(false);
     const { canShowModule } = usePermission();
     const router = useRouter();
+    const { t } = useTranslation();
 
     const menuItems = [
         {
             icon: Package,
-            text: '成品管理',
+            text: t('components.siderbar.clothes_management'),
             moduleId: 'clothes_management',
             isExpandable: true,
             isOpen: isClothesOpen,
@@ -30,25 +31,25 @@ export default function Siderbar({ isSidebarOpen }) {
             subItems: [
                 {
                     icon: PackagePlus,
-                    text: '入庫',
+                    text: t('components.siderbar.clothes_in'),
                     path: '/clothes/in',
                     moduleId: 'clothes_in'
                 },
                 {
                     icon: PackageMinus,
-                    text: '出庫',
+                    text: t('components.siderbar.clothes_out'),
                     path: '/clothes/out',
                     moduleId: 'clothes_out'
                 },
                 {
                     icon: PackageSearch,
-                    text: '調整',
+                    text: t('components.siderbar.clothes_adj'),
                     path: '/clothes/adjust',
                     moduleId: 'clothes_adj'
                 },
                 {
                     icon: LineChart,
-                    text: '進耗存',
+                    text: t('components.siderbar.clothes_status'),
                     path: '/clothes/status',
                     moduleId: 'clothes_status'
                 },
@@ -56,13 +57,13 @@ export default function Siderbar({ isSidebarOpen }) {
         },
         {
             icon: Users,
-            text: '使用者管理',
+            text: t('components.siderbar.users'),
             path: '/users',
             moduleId: 'user_management'
         },
         {
             icon: Settings,
-            text: '系統管理',
+            text: t('components.siderbar.settings'),
             path: '/settings',
             moduleId: 'system_management'
         }
