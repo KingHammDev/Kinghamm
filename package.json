@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "update": "npm install -g npm",
-    "init": "npx prisma generate -y && npx prisma db push -y"
+    "init": "npx prisma generate && npx prisma db push"
   },
   "dependencies": {
     "@prisma/client": "^6.1.0",
