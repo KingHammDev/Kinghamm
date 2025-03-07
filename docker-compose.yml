@@ -12,7 +12,7 @@ services:
     depends_on:
       - db
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kinghamm?schema=public
+      - DATABASE_URL=postgresql://postgres:2Duxaiuxa@db:5432/kinghamm?schema=public
       - JWT_SECRET=${JWT_SECRET}
       - NODE_ENV=production
     networks:
