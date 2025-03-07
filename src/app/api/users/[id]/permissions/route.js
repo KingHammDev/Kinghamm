@@ -62,7 +62,7 @@ export async function PUT(request, { params }) {
     });
 
   } catch (error) {
-    console.error('Error updating permissions:', error);
+    console.log(error.message);
     return NextResponse.json({
       success: false,
       message: '更新權限設定失敗'

@@ -23,6 +23,10 @@ export default function ClothesAdjustPage() {
     const [searchProductNo, setSearchProductNo] = useState('');
     const [searchError, setSearchError] = useState('');
 
+    const [isExcelModalOpen, setExcelModalOpen] = useState(false);
+    const [excelFile, setExcelFile] = useState(null);
+    const [excelLoading, setExcelLoading] = useState(false);
+    const [excelPreviewData, setExcelPreviewData] = useState([]);
     // const [isMssqlModalOpen, setMssqlModalOpen] = useState(false);
     // const [mssqlSearchProductNo, setMssqlSearchProductNo] = useState('');
     // const [mssqlData, setMssqlData] = useState([]);
@@ -328,6 +332,87 @@ export default function ClothesAdjustPage() {
     // };
 
 
+    // 處理Excel檔案選擇事件
+    const handleExcelFileChange = (e) => {
+        if (e.target.files.length > 0) {
+            setExcelFile(e.target.files[0]);
+        }
+    };
+    // 處理Excel預覽
+    const handleExcelPreview = async () => {
+        if (!excelFile) {
+            alert(t('app.(main).clothes.adjust.please_select_file'));
+            return;
+        }
+
+        setExcelLoading(true);
+        const formData = new FormData();
+        formData.append('file', excelFile);
+
+        try {
+            const response = await fetch('/api/clothes/adjust/import?action=preview', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                setExcelPreviewData(data.data);
+            } else {
+                alert(data.message || t('app.(main).clothes.adjust.preview_error'));
+            }
+        } catch (error) {
+            console.error('Excel preview error:', error);
+            alert(t('app.(main).clothes.adjust.preview_error'));
+        } finally {
+            setExcelLoading(false);
+        }
+    };
+
+    // 處理Excel匯入
+    const handleExcelImport = async () => {
+        if (!excelFile) {
+            alert(t('app.(main).clothes.adjust.please_select_file'));
+            return;
+        }
+
+        setExcelLoading(true);
+        const formData = new FormData();
+        formData.append('file', excelFile);
+        formData.append('docDate', docDate);
+        formData.append('userId', userData.id);
+        formData.append('faId', userData.faId);
+
+        try {
+            const response = await fetch('/api/clothes/adjust/import', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                alert(t('app.(main).clothes.adjust.import_success'));
+                setExcelModalOpen(false);
+                setExcelFile(null);
+                setExcelPreviewData([]);
+
+                // 如果有返回文件編號，則載入該文件
+                if (data.documentNo) {
+                    router.push(`/clothes/adjust?docNo=${data.documentNo}`);
+                }
+            } else {
+                alert(data.message || t('app.(main).clothes.adjust.import_error'));
+            }
+        } catch (error) {
+            console.error('Excel import error:', error);
+            alert(t('app.(main).clothes.adjust.import_error'));
+        } finally {
+            setExcelLoading(false);
+        }
+    };
+
+
+
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
@@ -365,6 +450,15 @@ export default function ClothesAdjustPage() {
                     >
                         {t('app.(main).clothes.public.btn_doc_request')}
                     </button>
+                    {hasPermission('clothes_adj', 'import') && (
+                        <button
+                            onClick={() => setExcelModalOpen(true)}
+                            type="button"
+                            className="px-4 py-2 text-green-600 border border-green-600 rounded hover:bg-green-50"
+                        >
+                            {t('app.(main).clothes.adjust.excel_import')}
+                        </button>
+                    )}
                     {hasPermission('clothes_adj', 'create') && (
                         <button
                             onClick={handleCreateNew}
@@ -705,6 +799,83 @@ export default function ClothesAdjustPage() {
                     </div>
                 </div>
             )} */}
+            {isExcelModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-4xl">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-semibold">{t('app.(main).clothes.adjust.excel_import')}</h2>
+                            <button
+                                onClick={() => {
+                                    setExcelModalOpen(false);
+                                    setExcelFile(null);
+                                    setExcelPreviewData([]);
+                                }}
+                                className="text-gray-500 hover:text-gray-700"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className="mb-6">
+                            <div className="flex items-center space-x-2 mb-4">
+                                <input
+                                    type="file"
+                                    accept=".xlsx,.xls"
+                                    onChange={handleExcelFileChange}
+                                    className="flex-1 border-2 border-gray-300 rounded-md py-2 px-3"
+                                />
+                                <button
+                                    onClick={handleExcelPreview}
+                                    disabled={!excelFile || excelLoading}
+                                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
+                                >
+                                    {excelLoading ? t('app.(main).clothes.public.processing') : t('app.(main).clothes.adjust.preview')}
+                                </button>
+                            </div>
+                            <div className="text-sm text-gray-600">
+                                {t('app.(main).clothes.adjust.excel_format_hint')}
+                            </div>
+                        </div>
+
+                        {excelPreviewData.length > 0 && (
+                            <div className="overflow-y-auto max-h-[50vh]">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.order')}</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.color')}</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.po')}</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.size')}</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('app.(main).clothes.public.qty')}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {excelPreviewData.map((item, index) => (
+                                            <tr key={index}>
+                                                <td className="px-6 py-4 whitespace-nowrap">{item.od_no}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{item.color_name}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{item.po}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{item.size}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{item.quantity}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+
+                        <div className="mt-6 flex justify-end">
+                            <button
+                                onClick={handleExcelImport}
+                                disabled={excelPreviewData.length === 0 || excelLoading}
+                                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                            >
+                                {excelLoading ? t('app.(main).clothes.public.processing') : t('app.(main).clothes.adjust.confirm_import')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

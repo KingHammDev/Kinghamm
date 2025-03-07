@@ -48,14 +48,14 @@ export async function GET(request) {
       data: documents,
       documents: Object.values(groupedDocs).map(doc => ({
         c_adj_no: doc.c_adj_no,
-        created_at: doc.created_at,
+        created_at: documents[0].doc_date,
         itemCount: doc.items.length,
         totalQuantity: doc.items.reduce((sum, item) => sum + item.quantity, 0)
       }))
     });
 
   } catch (error) {
-    console.error('Error searching documents:', error);
+    console.log(error.message);
     return NextResponse.json({
       success: false,
       message: '查詢單據時發生錯誤'

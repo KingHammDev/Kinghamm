@@ -62,7 +62,15 @@
                     "inventory_data": "成品庫存資料"
                 },
                 "adjust": {
-                    "title": "成品調整作業"
+                    "title": "成品調整作業",
+                    "excel_import": "Excel匯入",
+                    "preview": "預覽",
+                    "confirm_import": "確認匯入",
+                    "excel_format_hint": "Excel文件格式要求：第一行為表頭，包含「貨號」、「顏色」、「PO」、「尺寸」、「數量」欄位",
+                    "please_select_file": "請選擇Excel文件",
+                    "preview_error": "預覽時發生錯誤",
+                    "import_success": "匯入成功",
+                    "import_error": "匯入時發生錯誤"
                 },
                 "status": {
                     "select_factory": "請選擇廠區",

@@ -72,7 +72,7 @@ export async function DELETE(request, { params }) {
     });
 
   } catch (error) {
-    console.error('Delete error:', error);
+    console.log(error.message);
     return NextResponse.json({
       success: false,
       message: '刪除項目時發生錯誤'

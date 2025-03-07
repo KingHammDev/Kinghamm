@@ -124,7 +124,7 @@ export async function GET(request) {
         });
 
     } catch (error) {
-        console.error('Error fetching detail:', error);
+        console.log(error.message);
         return NextResponse.json({
             success: false,
             message: '取得明細資料時發生錯誤'

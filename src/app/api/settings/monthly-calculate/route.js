@@ -148,7 +148,7 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    console.error('Monthly calculation error:', error);
+    console.log(error.message);
     return NextResponse.json({
       success: false,
       message: '月結作業失敗'

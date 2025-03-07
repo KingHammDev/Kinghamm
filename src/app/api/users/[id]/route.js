@@ -59,7 +59,7 @@ export async function DELETE(request, { params }) {
         });
 
     } catch (error) {
-        console.error('Error deleting user:', error);
+        console.log(error.message);
         return NextResponse.json({
             success: false,
             message: '刪除使用者失敗'

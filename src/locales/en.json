@@ -62,7 +62,15 @@
                     "inventory_data": "Finished Goods Inventory Data"
                 },
                 "adjust": {
-                    "title": "Clothes Adjust Operations"
+                    "title": "Clothes Adjust Operations",
+                    "excel_import": "Excel Import",
+                    "preview": "Preview",
+                    "confirm_import": "Confirm Import",
+                    "excel_format_hint": "Excel file format: First row should be headers, including 'Order Number', 'Color', 'PO', 'Size', 'Quantity'",
+                    "please_select_file": "Please select an Excel file",
+                    "preview_error": "Error occurred during preview",
+                    "import_success": "Import successful",
+                    "import_error": "Error occurred during import"
                 },
                 "status": {
                     "select_factory": "Please select a factory",

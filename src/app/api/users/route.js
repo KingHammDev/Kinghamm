@@ -80,7 +80,7 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    console.error('Error creating user:', error);
+    console.log(error.message);
     return NextResponse.json({
       success: false,
       message: '新增使用者失敗'

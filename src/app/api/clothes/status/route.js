@@ -73,15 +73,15 @@ export async function GET(request) {
 
       // 合併所有資料
       const allKeys = new Set([
-        ...inData.map(item => `${item.fa_id}-${item.od_no}-${item.color_name}-${item.po}-${item.size}`),
-        ...outData.map(item => `${item.fa_id}-${item.od_no}-${item.color_name}-${item.po}-${item.size}`),
-        ...adjData.map(item => `${item.fa_id}-${item.od_no}-${item.color_name}-${item.po}-${item.size}`),
-        ...lastMonthBalance.map(item => `${item.fa_id}-${item.od_no}-${item.color_name}-${item.po}-${item.size}`)
+        ...inData.map(item => `${item.fa_id}/${item.od_no}/${item.color_name}/${item.po}/${item.size}`),
+        ...outData.map(item => `${item.fa_id}/${item.od_no}/${item.color_name}/${item.po}/${item.size}`),
+        ...adjData.map(item => `${item.fa_id}/${item.od_no}/${item.color_name}/${item.po}/${item.size}`),
+        ...lastMonthBalance.map(item => `${item.fa_id}/${item.od_no}/${item.color_name}/${item.po}/${item.size}`)
       ]);
 
       // 整理資料
       const result = Array.from(allKeys).map(key => {
-        const [fa_id, od_no, color_name, po, size] = key.split('-');
+        const [fa_id, od_no, color_name, po, size] = key.split('/');
 
         // 找到對應的數據
         const opening = lastMonthBalance.find(item =>

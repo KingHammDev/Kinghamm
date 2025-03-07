@@ -51,7 +51,7 @@ export async function GET(request) {
       data
     });
   } catch (error) {
-    console.error('API Error:', error);
+    console.log(error.message);
     return NextResponse.json({
       success: false,
       message: '查詢資料時發生錯誤'

@@ -28,7 +28,8 @@ export async function GET(request, { params }) {
     return NextResponse.json({
       success: true,
       document: {
-        c_out_no: docNo
+        c_out_no: docNo,
+        doc_date: items[0].doc_date
       },
       items: items
     });
@@ -84,6 +85,14 @@ export async function PUT(request, { params }) {
 
     // 使用交易進行更新
     await prisma.$transaction(async (tx) => {
+      const { doc_date } = await tx.clothesOut.findFirst({
+        where: {
+          c_adj_no: docNo
+        },
+        select: {
+          doc_date: true
+        }
+      })
       // 先刪除原有的項目
       await tx.clothesOut.deleteMany({
         where: {
@@ -103,7 +112,8 @@ export async function PUT(request, { params }) {
             po: item.po,
             size: item.size,
             quantity: parseInt(item.quantity),
-            user_id: item.userId
+            user_id: item.userId,
+            doc_date
           }
         });
       }
@@ -115,7 +125,7 @@ export async function PUT(request, { params }) {
     });
 
   } catch (error) {
-    console.error('Update error:', error);
+    console.log(error.message);
     return NextResponse.json({
       success: false,
       message: '更新時發生錯誤',

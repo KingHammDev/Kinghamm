@@ -45,7 +45,8 @@ const PERMISSION_MODULES = {
           { id: 'create', label: '新增單據' },
           { id: 'delete', label: '刪除選中項目' },
           { id: 'add_detail', label: '新增明細' },
-          { id: 'save', label: '儲存' }
+          { id: 'save', label: '儲存' },
+          { id: 'import', label: 'Excel匯入' }
         ]
       },
       clothes_status: {

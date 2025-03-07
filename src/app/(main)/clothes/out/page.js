@@ -284,7 +284,7 @@ export default function ClothesOutPage() {
 
         try {
             setClothesLoading(true);
-            const response = await fetch(`/api/clothes/out/search?productNo=${encodeURIComponent(clothesSearchProductNo)}`);
+            const response = await fetch(`/api/inventory?productNo=${encodeURIComponent(clothesSearchProductNo)}`);
             const data = await response.json();
             if (data.success) {
                 setClothesData(data.data);
