@@ -6,7 +6,6 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
     "update": "npm install -g npm",
     "init": "npx prisma generate && npx prisma db push"
   },

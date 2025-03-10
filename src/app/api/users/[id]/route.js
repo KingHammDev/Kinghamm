@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 // 更新使用者
 export async function PUT(request, { params }) {
     try {
-        const { id } = params;
+        const { id } = await params;
         const body = await request.json();
         const { email, password, name, faId } = body;
 
@@ -47,7 +47,7 @@ export async function PUT(request, { params }) {
 // 刪除使用者
 export async function DELETE(request, { params }) {
     try {
-        const { id } = params;
+        const { id } = await params;
 
         await prisma.user.delete({
             where: { id: parseInt(id) }

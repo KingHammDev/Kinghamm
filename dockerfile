@@ -11,7 +11,7 @@ RUN npm install
 
 RUN npm run update
 
-RUN npm run init
+RUN npx prisma generate
 
 # 建立應用程式
 RUN npm run build
