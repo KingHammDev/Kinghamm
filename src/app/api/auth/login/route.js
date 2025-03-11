@@ -41,7 +41,7 @@ export async function POST(request) {
           id: 'admin',
         },
       });
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+      const secret = new TextEncoder().encode(jwtSecret);
       const token = await new SignJWT({
         userId: 'admin',
         email: 'admin@kinghamm.com',
@@ -81,7 +81,7 @@ export async function POST(request) {
     }
 
     // 使用 jose 生成 token
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+    const secret = new TextEncoder().encode(jwtSecret);
     const token = await new SignJWT({
       userId: user.id,
       email: user.email,

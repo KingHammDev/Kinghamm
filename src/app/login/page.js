@@ -31,7 +31,6 @@ export default function LoginPage() {
             if (data.success) {
                 // 登入成功，導向到儀表板
                 router.push('/dashboard');
-                console.log(data.success)
             } else {
                 setError(data.message);
             }
