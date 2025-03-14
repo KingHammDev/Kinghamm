@@ -4,7 +4,6 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const DEFAULT_JWT_SECRET = '48414c52718d3c8a85fa52bf5865e8219f0737a84256c59193e634b6526cfb8f';
 
 export async function GET(request) {
   try {
@@ -19,7 +18,7 @@ export async function GET(request) {
 
 
     try {
-      const jwtSecret = process.env.JWT_SECRET || DEFAULT_JWT_SECRET;
+      const jwtSecret = process.env.JWT_SECRET;
       const secret = new TextEncoder().encode(jwtSecret);
       const { payload } = await jwtVerify(authToken, secret);
 

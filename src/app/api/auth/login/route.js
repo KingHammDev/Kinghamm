@@ -5,12 +5,10 @@ import { SignJWT } from 'jose';
 
 const prisma = new PrismaClient();
 
-const DEFAULT_JWT_SECRET = '48414c52718d3c8a85fa52bf5865e8219f0737a84256c59193e634b6526cfb8f';
-
 export async function POST(request) {
   try {
 
-    const jwtSecret = process.env.JWT_SECRET || DEFAULT_JWT_SECRET;
+    const jwtSecret = process.env.JWT_SECRET;
 
     if (!jwtSecret) {
       console.error('JWT_SECRET is not defined');
@@ -54,7 +52,7 @@ export async function POST(request) {
         name: 'auth_token',
         value: token,
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: false,
         sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 7, // 7 days
       });
